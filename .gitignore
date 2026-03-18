@@ -1,0 +1,47 @@
+# Environment — never commit secrets
+.env
+*.env.local
+*.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Scraper runtime files
+scraper/scrape_history*.json
+scraper/history/
+scraper/__pycache__/
+scraper/sources/__pycache__/
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# Docker volumes (local data)
+pgdata/
+ollama_models/
+
+# IDE / OS
+.claude/
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Alembic compiled
+backend/alembic/__pycache__/
+backend/alembic/versions/__pycache__/
