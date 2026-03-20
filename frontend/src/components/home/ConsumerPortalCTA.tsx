@@ -14,7 +14,7 @@ export default function ConsumerPortalCTA({ intentLeadCount }: { intentLeadCount
               Consumer Intent Leads
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
-              Homeowners Actively
+              Texas Homeowners Actively
               <br />
               <span className="text-teal-600">Seeking Your Services</span>
             </h2>
@@ -23,14 +23,14 @@ export default function ConsumerPortalCTA({ intentLeadCount }: { intentLeadCount
               <strong className="text-slate-900">
                 {formatted ? `${formatted} consumer intent leads` : "consumer intent leads"}
               </strong>{" "}
-              — real people who submitted a service request form looking for exactly what you offer.
-              These leads convert at dramatically higher rates.
+              — real Texas homeowners who pulled building permits and are actively hiring contractors
+              right now. These leads convert at dramatically higher rates.
             </p>
             <ul className="space-y-3 text-slate-600 mb-8">
               {[
-                "Real homeowners actively requesting quotes",
-                "Includes project description and timeline",
-                "Both residential and commercial projects",
+                "Texas homeowners actively hiring contractors",
+                "From real building permit records — verified intent",
+                "Houston, Dallas, Austin, San Antonio and more",
                 "Filter by 'Intent Leads' in the shop",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3">
@@ -64,10 +64,10 @@ export default function ConsumerPortalCTA({ intentLeadCount }: { intentLeadCount
               </div>
             </div>
             <h3 className="text-2xl font-bold text-slate-900 mb-3">
-              Need a local contractor?
+              Need a Texas contractor?
             </h3>
             <p className="text-slate-500 mb-6 leading-relaxed">
-              Submit a free service request and get connected with local professionals
+              Submit a free service request and get connected with Texas professionals
               who specialize in exactly what you need — no fees, no spam.
             </p>
             <ul className="space-y-2 text-sm text-slate-600 mb-8">
@@ -75,7 +75,7 @@ export default function ConsumerPortalCTA({ intentLeadCount }: { intentLeadCount
                 "Completely free — no fees ever",
                 "Get multiple competing quotes",
                 "Residential & commercial projects",
-                "Available across all 50 states",
+                "All Texas cities covered",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <span className="text-teal-500 font-bold">✓</span>

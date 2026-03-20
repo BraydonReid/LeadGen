@@ -1,0 +1,28 @@
+# MacBook scraper — connects to the Windows machine's PostgreSQL over LAN.
+#
+# Setup:
+#   1. Copy .env.macbook.example → .env and fill in WINDOWS_HOST + POSTGRES_PASSWORD
+#   2. docker compose -f docker-compose.macbook.yml up -d --build
+#
+# This runs a single scraper instance ("mac") alongside the two Windows instances
+# (east + west), giving you 3 parallel scrapers all writing to the same database.
+
+version: "3.9"
+
+services:
+  scraper-mac:
+    build: ./scraper
+    environment:
+      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@${WINDOWS_HOST}:5432/leadgen
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: mac
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - ./scraper:/app
+      - scraper_mac_history:/app/history
+    restart: unless-stopped
+    command: python main.py --schedule
+
+volumes:
+  scraper_mac_history:

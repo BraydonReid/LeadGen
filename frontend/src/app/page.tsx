@@ -27,22 +27,22 @@ export default async function HomePage() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-10 lg:p-16 text-white shadow-xl shadow-blue-500/20">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Built for the Small Business Owner
+              Built for Texas Business Owners
             </h2>
             <p className="text-blue-100 text-lg mb-3 max-w-2xl mx-auto leading-relaxed">
               Traditional lead services charge thousands per month and lock you into long contracts.
-              We built LeadGen so anyone can access quality business contacts — without the overhead.
+              We built Texas LeadGen so any Texas contractor can access quality local leads — without the overhead.
             </p>
             <p className="text-blue-200 text-base mb-10 max-w-xl mx-auto">
-              No phone calls to sales reps. No monthly fees. Just pick your industry, choose how
-              many leads you need, and download your list in minutes.
+              No phone calls to sales reps. No monthly fees. Pick your Texas city and industry,
+              choose how many leads you need, and download your list in minutes.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
-                href="/shop"
+                href="/shop?state=TX"
                 className="bg-white text-blue-700 font-bold px-8 py-4 rounded-xl text-lg hover:bg-blue-50 transition-all hover:scale-105"
               >
-                Start Browsing Leads →
+                Browse Texas Leads →
               </Link>
               <a
                 href="#how-it-works"
@@ -95,8 +95,8 @@ export default async function HomePage() {
           </div>
 
           <p className="text-center text-slate-400 text-sm">
-            Prices shown are examples for roofing leads in Texas. Actual prices vary by industry and location.{" "}
-            <Link href="/shop" className="text-blue-600 hover:underline">Search your industry for exact pricing.</Link>
+            Prices shown are examples for roofing leads in Texas. Actual prices vary by industry and city.{" "}
+            <Link href="/shop?state=TX" className="text-blue-600 hover:underline">Search your Texas industry for exact pricing.</Link>
           </p>
         </div>
       </section>

@@ -3,9 +3,9 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LeadGen — Business Leads Marketplace",
+  title: "Texas LeadGen — Contractor & Business Leads in Texas",
   description:
-    "Buy verified business leads by industry and location. Roofing, plumbing, HVAC, solar and more. Starting at $0.10/lead. Instant CSV download.",
+    "Buy verified Texas business leads by industry and city. Roofing, plumbing, HVAC, electrician, solar and more across Houston, Dallas, Austin, San Antonio. Starting at $0.10/lead. Instant CSV download.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <span className="text-xl font-black text-slate-900 tracking-tight">LeadGen</span>
+              <span className="text-xl font-black text-slate-900 tracking-tight">Texas LeadGen</span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
@@ -44,29 +44,32 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="bg-slate-900 text-slate-400">
           <div className="max-w-6xl mx-auto px-6 py-12 grid sm:grid-cols-3 gap-10">
             <div>
-              <div className="text-white font-black text-lg mb-3">LeadGen</div>
+              <div className="text-white font-black text-lg mb-3">Texas LeadGen</div>
               <p className="text-sm leading-relaxed">
-                Affordable business leads for small businesses and independent sales professionals.
+                Texas-focused business leads for contractors and sales professionals across
+                Houston, Dallas, Austin, San Antonio, and every city in between.
                 No contracts, no commitments.
               </p>
             </div>
             <div>
               <div className="text-white font-semibold text-sm mb-4">Product</div>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/shop" className="hover:text-white transition-colors">Browse Leads</Link></li>
+                <li><Link href="/shop" className="hover:text-white transition-colors">Browse Texas Leads</Link></li>
                 <li><a href="/#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
                 <li><a href="/#industries" className="hover:text-white transition-colors">Industries</a></li>
                 <li><Link href="/request-service" className="hover:text-white transition-colors">Request a Service</Link></li>
               </ul>
             </div>
             <div>
-              <div className="text-white font-semibold text-sm mb-4">Popular Searches</div>
+              <div className="text-white font-semibold text-sm mb-4">Texas Cities</div>
               <ul className="space-y-2 text-sm">
                 {[
-                  ["Roofing leads — Texas", "/shop?industry=Roofing&state=TX"],
-                  ["Plumbing leads — California", "/shop?industry=Plumbing&state=CA"],
-                  ["HVAC leads — Florida", "/shop?industry=Hvac&state=FL"],
-                  ["Solar leads — California", "/shop?industry=Solar&state=CA"],
+                  ["Roofing leads — Houston", "/shop?industry=Roofing&state=TX&city=Houston"],
+                  ["HVAC leads — Dallas", "/shop?industry=Hvac&state=TX&city=Dallas"],
+                  ["Plumbing leads — Austin", "/shop?industry=Plumbing&state=TX&city=Austin"],
+                  ["Electrician leads — San Antonio", "/shop?industry=Electrician&state=TX&city=San+Antonio"],
+                  ["Solar leads — Texas", "/shop?industry=Solar&state=TX"],
+                  ["Contractor leads — Fort Worth", "/shop?industry=Remodeling&state=TX&city=Fort+Worth"],
                 ].map(([label, href]) => (
                   <li key={href}>
                     <Link href={href} className="hover:text-white transition-colors">{label}</Link>

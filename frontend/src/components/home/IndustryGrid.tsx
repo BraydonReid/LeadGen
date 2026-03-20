@@ -20,13 +20,13 @@ const INDUSTRY_ICONS: Record<string, string> = {
 
 const POPULAR_INDUSTRIES = [
   { industry: "Roofing", state: "TX" },
-  { industry: "Plumbing", state: "CA" },
-  { industry: "Hvac", state: "FL" },
-  { industry: "Solar", state: "CA" },
-  { industry: "Electrician", state: "NY" },
-  { industry: "Landscaping", state: "AZ" },
-  { industry: "Pest Control", state: "FL" },
-  { industry: "Construction", state: "TX" },
+  { industry: "Plumbing", state: "TX" },
+  { industry: "Hvac", state: "TX" },
+  { industry: "Solar", state: "TX" },
+  { industry: "Electrician", state: "TX" },
+  { industry: "Landscaping", state: "TX" },
+  { industry: "Pest Control", state: "TX" },
+  { industry: "Remodeling", state: "TX" },
 ];
 
 export default function IndustryGrid({ industries }: { industries: IndustryStat[] }) {
@@ -43,9 +43,9 @@ export default function IndustryGrid({ industries }: { industries: IndustryStat[
     <section className="py-20 bg-slate-50">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">Browse by Industry</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">Browse Texas Leads by Industry</h2>
           <p className="text-slate-500 text-lg">
-            Click any industry to see available leads and pricing.
+            Click any industry to see available Texas leads and pricing.
           </p>
         </div>
 

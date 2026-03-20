@@ -36,11 +36,14 @@ from database import SessionLocal
 from dedup import already_exists
 from models import Lead
 from sources.base import ScrapedLead
+from sources.arcgis_permits import ArcGISPermitScraper
 from sources.bbb import BBBScraper
 from sources.building_permits import BuildingPermitScraper
 from sources.city_open_data import CityOpenDataScraper
+from sources.ckan_permits import CKANPermitScraper
 from sources.manta import MantaScraper
 from sources.superpages import SuperpagesScraper
+from sources.tdlr import TDLRScraper
 from sources.yellowpages import YellowPagesScraper
 
 # Optional API sources — loaded only if keys are present
@@ -219,59 +222,45 @@ INDUSTRIES: dict[str, list[str]] = {
     "surveying":            ["land surveyor", "property surveying", "boundary survey", "topographic survey"],
 }
 
-# ── Location pool — all 50 states with expanded city coverage ─────────────────
-# Cities represent all US municipalities 25,000+ population
+# ── Location pool — Texas-focused for maximum lead density and SEO ─────────────
+# Every Texas city/CDP with 25,000+ population + key suburbs.
+# Both scraper instances cover all of Texas; their separate history files
+# ensure they naturally diversify across different city × industry combos.
 LOCATIONS: dict[str, list[str]] = {
-    "AL": ["Birmingham", "Montgomery", "Huntsville", "Mobile", "Tuscaloosa", "Hoover", "Dothan", "Auburn", "Decatur", "Madison", "Florence", "Gadsden", "Vestavia Hills", "Prattville", "Phenix City"],
-    "AK": ["Anchorage", "Fairbanks", "Juneau", "Sitka", "Ketchikan", "Wasilla", "Kenai", "Kodiak"],
-    "AZ": ["Phoenix", "Tucson", "Mesa", "Chandler", "Scottsdale", "Glendale", "Gilbert", "Tempe", "Peoria", "Surprise", "Yuma", "Avondale", "Goodyear", "Flagstaff", "Buckeye", "Lake Havasu City", "Casa Grande", "Sierra Vista", "Maricopa", "Oro Valley"],
-    "AR": ["Little Rock", "Fort Smith", "Fayetteville", "Springdale", "Jonesboro", "Conway", "Rogers", "Bentonville", "Pine Bluff", "Hot Springs", "Benton", "Texarkana", "Sherwood", "Jacksonville"],
-    "CA": ["Los Angeles", "San Diego", "San Jose", "San Francisco", "Fresno", "Sacramento", "Long Beach", "Oakland", "Bakersfield", "Anaheim", "Riverside", "Stockton", "Irvine", "Chula Vista", "Fremont", "San Bernardino", "Modesto", "Fontana", "Moreno Valley", "Glendale", "Huntington Beach", "Santa Ana", "Santa Clarita", "Garden Grove", "Oceanside", "Rancho Cucamonga", "Ontario", "Lancaster", "Elk Grove", "Corona", "Palmdale", "Salinas", "Pomona", "Hayward", "Escondido", "Torrance", "Sunnyvale", "Pasadena", "Orange", "Fullerton", "Thousand Oaks", "Visalia", "Simi Valley", "Concord", "Roseville", "Santa Rosa", "Vallejo", "Victorville", "El Monte", "Berkeley"],
-    "CO": ["Denver", "Colorado Springs", "Aurora", "Fort Collins", "Lakewood", "Thornton", "Arvada", "Westminster", "Pueblo", "Boulder", "Highlands Ranch", "Centennial", "Castle Rock", "Loveland", "Broomfield", "Greeley", "Longmont", "Lone Tree", "Northglenn", "Commerce City"],
-    "CT": ["Bridgeport", "New Haven", "Hartford", "Stamford", "Waterbury", "Norwalk", "Danbury", "New Britain", "West Hartford", "Greenwich", "Hamden", "Meriden", "Milford", "Stratford", "Middletown"],
-    "DE": ["Wilmington", "Dover", "Newark", "Middletown", "Smyrna", "Milford", "Seaford", "Georgetown", "Elsmere"],
-    "FL": ["Jacksonville", "Miami", "Tampa", "Orlando", "St. Petersburg", "Hialeah", "Tallahassee", "Fort Lauderdale", "Cape Coral", "Pembroke Pines", "Hollywood", "Gainesville", "Miramar", "Palm Bay", "Clearwater", "Port St. Lucie", "Coral Springs", "West Palm Beach", "Lakeland", "Pompano Beach", "Davie", "Miami Gardens", "Boca Raton", "Deltona", "Sunrise", "Plantation", "Fort Myers", "Palm Coast", "Deerfield Beach", "Melbourne", "Largo", "Boynton Beach", "Miami Beach", "Brandon", "Spring Hill", "Kissimmee", "Daytona Beach", "Ocala", "Pensacola", "Sarasota"],
-    "GA": ["Atlanta", "Augusta", "Columbus", "Macon", "Savannah", "Athens", "Sandy Springs", "Roswell", "Albany", "Warner Robins", "Alpharetta", "Marietta", "Smyrna", "Johns Creek", "Valdosta", "Brookhaven", "South Fulton", "Dunwoody", "Peachtree City", "Gainesville", "Stonecrest"],
-    "HI": ["Honolulu", "Pearl City", "Hilo", "Kailua", "Waipahu", "Kaneohe", "Mililani Town", "Kahului", "Ewa Beach", "Mililani Mauka"],
-    "ID": ["Boise", "Nampa", "Meridian", "Idaho Falls", "Pocatello", "Caldwell", "Coeur d'Alene", "Twin Falls", "Lewiston", "Post Falls", "Rexburg"],
-    "IL": ["Chicago", "Aurora", "Rockford", "Joliet", "Naperville", "Springfield", "Peoria", "Elgin", "Waukegan", "Cicero", "Champaign", "Arlington Heights", "Evanston", "Decatur", "Schaumburg", "Bolingbrook", "Palatine", "Skokie", "Des Plaines", "Orland Park"],
-    "IN": ["Indianapolis", "Fort Wayne", "Evansville", "South Bend", "Carmel", "Fishers", "Bloomington", "Hammond", "Gary", "Lafayette", "Muncie", "Terre Haute", "Noblesville", "Kokomo", "Anderson"],
-    "IA": ["Des Moines", "Cedar Rapids", "Davenport", "Sioux City", "Iowa City", "Waterloo", "Ames", "Council Bluffs", "Dubuque", "West Des Moines", "Ankeny", "Waukee"],
-    "KS": ["Wichita", "Overland Park", "Kansas City", "Topeka", "Olathe", "Lawrence", "Shawnee", "Manhattan", "Lenexa", "Salina", "Hutchinson"],
-    "KY": ["Louisville", "Lexington", "Bowling Green", "Owensboro", "Covington", "Hopkinsville", "Richmond", "Florence", "Georgetown", "Henderson", "Elizabethtown"],
-    "LA": ["New Orleans", "Baton Rouge", "Shreveport", "Lafayette", "Lake Charles", "Kenner", "Bossier City", "Monroe", "Alexandria", "Metairie", "Sulphur", "New Iberia"],
-    "ME": ["Portland", "Lewiston", "Bangor", "South Portland", "Auburn", "Biddeford", "Augusta", "Saco"],
-    "MD": ["Baltimore", "Frederick", "Rockville", "Gaithersburg", "Bowie", "Hagerstown", "Annapolis", "College Park", "Salisbury", "Columbia", "Germantown", "Silver Spring", "Waldorf", "Glen Burnie"],
-    "MA": ["Boston", "Worcester", "Springfield", "Lowell", "Cambridge", "New Bedford", "Brockton", "Quincy", "Lynn", "Fall River", "Newton", "Lawrence", "Somerville", "Framingham", "Haverhill", "Waltham", "Malden", "Brookline", "Plymouth", "Medford"],
-    "MI": ["Detroit", "Grand Rapids", "Warren", "Sterling Heights", "Ann Arbor", "Lansing", "Flint", "Dearborn", "Livonia", "Westland", "Troy", "Farmington Hills", "Kalamazoo", "Wyoming", "Southfield", "Rochester Hills", "Taylor", "Pontiac", "St. Clair Shores", "Royal Oak"],
-    "MN": ["Minneapolis", "Saint Paul", "Rochester", "Duluth", "Bloomington", "Brooklyn Park", "Plymouth", "Maple Grove", "Coon Rapids", "Burnsville", "Eden Prairie", "Edina", "Blaine", "Lakeville", "Minnetonka", "Apple Valley", "St. Cloud"],
-    "MS": ["Jackson", "Gulfport", "Southaven", "Hattiesburg", "Biloxi", "Meridian", "Tupelo", "Olive Branch", "Greenville", "Horn Lake"],
-    "MO": ["Kansas City", "Saint Louis", "Springfield", "Columbia", "Independence", "Lee's Summit", "O'Fallon", "Saint Joseph", "St. Peters", "Blue Springs", "Florissant", "Joplin", "Chesterfield", "Jefferson City"],
-    "MT": ["Billings", "Missoula", "Great Falls", "Bozeman", "Butte", "Helena", "Kalispell"],
-    "NE": ["Omaha", "Lincoln", "Bellevue", "Grand Island", "Kearney", "Fremont", "Hastings", "Norfolk"],
-    "NV": ["Las Vegas", "Henderson", "Reno", "North Las Vegas", "Sparks", "Carson City", "Enterprise", "Sunrise Manor", "Paradise", "Spring Valley"],
-    "NH": ["Manchester", "Nashua", "Concord", "Derry", "Dover", "Rochester", "Salem", "Merrimack", "Londonderry"],
-    "NJ": ["Newark", "Jersey City", "Paterson", "Elizabeth", "Trenton", "Clifton", "Camden", "Passaic", "Union City", "Bayonne", "East Orange", "Woodbridge", "Toms River", "Hamilton", "Edison"],
-    "NM": ["Albuquerque", "Las Cruces", "Rio Rancho", "Santa Fe", "Roswell", "Farmington", "Clovis", "Hobbs", "Alamogordo"],
-    "NY": ["New York City", "Buffalo", "Rochester", "Yonkers", "Syracuse", "Albany", "New Rochelle", "Mount Vernon", "Schenectady", "Utica", "White Plains", "Hempstead", "Troy", "Binghamton", "Freeport", "Valley Stream"],
-    "NC": ["Charlotte", "Raleigh", "Greensboro", "Durham", "Winston-Salem", "Fayetteville", "Cary", "Wilmington", "High Point", "Concord", "Gastonia", "Jacksonville", "Asheville", "Chapel Hill", "Rocky Mount", "Burlington", "Huntersville", "Greenville", "Apex"],
-    "ND": ["Fargo", "Bismarck", "Grand Forks", "Minot", "West Fargo", "Mandan", "Dickinson"],
-    "OH": ["Columbus", "Cleveland", "Cincinnati", "Toledo", "Akron", "Dayton", "Parma", "Canton", "Youngstown", "Lorain", "Hamilton", "Springfield", "Kettering", "Elyria", "Lakewood", "Cuyahoga Falls", "Euclid", "Middletown", "Newark", "Mentor"],
-    "OK": ["Oklahoma City", "Tulsa", "Norman", "Broken Arrow", "Lawton", "Edmond", "Moore", "Midwest City", "Enid", "Stillwater", "Muskogee", "Owasso", "Bartlesville", "Shawnee"],
-    "OR": ["Portland", "Salem", "Eugene", "Gresham", "Hillsboro", "Beaverton", "Bend", "Medford", "Springfield", "Corvallis", "Albany", "Tigard", "Lake Oswego", "Keizer"],
-    "PA": ["Philadelphia", "Pittsburgh", "Allentown", "Erie", "Reading", "Scranton", "Bethlehem", "Lancaster", "Harrisburg", "Altoona", "York", "Wilkes-Barre", "Chester", "Easton", "State College"],
-    "RI": ["Providence", "Cranston", "Warwick", "Pawtucket", "East Providence", "Woonsocket", "Newport", "Central Falls"],
-    "SC": ["Columbia", "Charleston", "North Charleston", "Mount Pleasant", "Rock Hill", "Greenville", "Summerville", "Goose Creek", "Hilton Head Island", "Florence", "Spartanburg", "Myrtle Beach", "Sumter", "Anderson"],
-    "SD": ["Sioux Falls", "Rapid City", "Aberdeen", "Brookings", "Watertown", "Mitchell", "Yankton"],
-    "TN": ["Nashville", "Memphis", "Knoxville", "Chattanooga", "Clarksville", "Murfreesboro", "Jackson", "Franklin", "Johnson City", "Bartlett", "Hendersonville", "Kingsport", "Collierville", "Cleveland", "Smyrna", "Germantown"],
-    "TX": ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth", "El Paso", "Arlington", "Corpus Christi", "Plano", "Lubbock", "Laredo", "Irving", "Garland", "Frisco", "McKinney", "Amarillo", "Grand Prairie", "Brownsville", "Pasadena", "Mesquite", "Killeen", "McAllen", "Carrollton", "Waco", "Denton", "Midland", "Odessa", "Abilene", "Beaumont", "Round Rock", "Richardson", "Tyler", "League City", "Allen", "Sugar Land", "Edinburg", "College Station", "Pearland", "Lewisville", "San Angelo"],
-    "UT": ["Salt Lake City", "West Valley City", "Provo", "West Jordan", "Orem", "Sandy", "Ogden", "St. George", "Layton", "Millcreek", "Taylorsville", "Murray", "Logan", "Lehi", "South Jordan"],
-    "VT": ["Burlington", "South Burlington", "Rutland", "Barre", "Montpelier", "Winooski", "St. Albans"],
-    "VA": ["Virginia Beach", "Norfolk", "Chesapeake", "Richmond", "Newport News", "Alexandria", "Hampton", "Roanoke", "Portsmouth", "Suffolk", "Lynchburg", "Harrisonburg", "Charlottesville", "Danville", "Manassas", "Fredericksburg"],
-    "WA": ["Seattle", "Spokane", "Tacoma", "Vancouver", "Bellevue", "Kent", "Everett", "Renton", "Kirkland", "Bellingham", "Kennewick", "Yakima", "Marysville", "Shoreline", "Richland", "Lakewood", "Redmond", "Pasco", "Federal Way", "Sammamish"],
-    "WV": ["Charleston", "Huntington", "Parkersburg", "Morgantown", "Wheeling", "Weirton", "Fairmont"],
-    "WI": ["Milwaukee", "Madison", "Green Bay", "Kenosha", "Racine", "Appleton", "Waukesha", "Oshkosh", "Eau Claire", "Janesville", "West Allis", "La Crosse", "Sheboygan", "Wauwatosa", "Fond du Lac"],
-    "WY": ["Cheyenne", "Casper", "Laramie", "Gillette", "Rock Springs", "Sheridan", "Green River"],
+    "TX": [
+        # Major metros
+        "Houston", "San Antonio", "Dallas", "Austin", "Fort Worth", "El Paso",
+        # DFW Metroplex
+        "Arlington", "Plano", "Irving", "Garland", "Frisco", "McKinney",
+        "Grand Prairie", "Mesquite", "Carrollton", "Denton", "Richardson",
+        "Lewisville", "Allen", "Flower Mound", "North Richland Hills",
+        "Mansfield", "Euless", "Bedford", "Haltom City", "Grapevine",
+        "Cedar Hill", "Rowlett", "DeSoto", "Duncanville", "Burleson",
+        "Waxahachie", "Wylie", "Sachse", "Murphy", "Coppell", "Keller",
+        "Southlake", "Colleyville", "Lewisville", "Denton", "Rockwall",
+        # Houston Metro
+        "Pasadena", "Pearland", "League City", "Sugar Land", "Baytown",
+        "Missouri City", "Conroe", "Spring", "The Woodlands", "Katy",
+        "Humble", "Atascocita", "Cypress", "Friendswood", "Stafford",
+        "Rosenberg", "Galveston", "Texas City", "La Porte", "Deer Park",
+        "Channelview", "Kingwood", "Tomball", "Porter",
+        # Austin Metro
+        "Round Rock", "Cedar Park", "Pflugerville", "Georgetown",
+        "San Marcos", "Kyle", "Buda", "Leander", "Hutto", "Lakeway",
+        "Cedar Park", "Bastrop", "Lockhart",
+        # San Antonio Metro
+        "New Braunfels", "Schertz", "Converse", "Universal City",
+        "Live Oak", "Leon Valley", "Helotes",
+        # Other major Texas cities
+        "Corpus Christi", "Lubbock", "Laredo", "Amarillo", "Brownsville",
+        "Killeen", "McAllen", "Waco", "Midland", "Odessa", "Abilene",
+        "Beaumont", "Tyler", "Edinburg", "College Station", "San Angelo",
+        "Wichita Falls", "Longview", "Harlingen", "Temple", "Bryan",
+        "Mission", "Pharr", "Port Arthur", "Victoria", "Texarkana",
+        "Abilene", "Lufkin", "Nacogdoches", "Sherman", "Wichita Falls",
+        "Greenville", "Marshall", "Big Spring", "Kerrville", "San Marcos",
+        "Del Rio", "Eagle Pass", "Laredo", "McAllen",
+    ],
 }
 
 
@@ -358,12 +347,11 @@ def _save_history(history: dict):
 
 
 def _get_active_locations() -> dict[str, list[str]]:
-    """Filter LOCATIONS based on SCRAPER_INSTANCE env var."""
-    if SCRAPER_INSTANCE == "east":
-        return {s: cities for s, cities in LOCATIONS.items() if s in EAST_STATES}
-    elif SCRAPER_INSTANCE == "west":
-        return {s: cities for s, cities in LOCATIONS.items() if s in WEST_STATES}
-    return LOCATIONS  # "all" — default single instance
+    """Texas-focused: both instances cover all of Texas.
+    The separate history files (scrape_history_east.json / scrape_history_west.json)
+    ensure the two instances naturally diversify across different city × industry combos.
+    """
+    return LOCATIONS
 
 
 def _select_targets(history: dict) -> list[tuple[str, str, str, str]]:
@@ -420,6 +408,45 @@ def _select_targets(history: dict) -> list[tuple[str, str, str, str]]:
     return selected
 
 
+# Cities with public permit open data — building_permits scraper only works here.
+# When a building_permits slot comes up but the selected city isn't in this list,
+# redirect to the next permit city so every permit slot actually generates data.
+PERMIT_CITIES: list[tuple[str, str]] = [
+    # Texas — 4 verified live permit APIs with contact name fields
+    ("Dallas", "TX"),        # Socrata   — daily updates, contractor field
+    ("Austin", "TX"),        # Socrata   — contractor_full_name, current 2026 data
+    ("San Antonio", "TX"),   # CKAN      — PRIMARY CONTACT field, updated Jan 2026
+    ("Fort Worth", "TX"),    # ArcGIS    — Owner_Full_Name, live daily updates 2026
+    ("Dallas", "TX"),        # extra weight so TX is ~35% of all permit slots
+    ("Fort Worth", "TX"),    # extra weight for FW — 4th largest TX city
+    # Supplemental cities with verified live data
+    ("Chicago", "IL"),
+    ("New York City", "NY"),
+    ("Seattle", "WA"),
+    ("Boston", "MA"),
+    ("Pittsburgh", "PA"),
+    ("Philadelphia", "PA"),
+    ("Raleigh", "NC"),
+    ("Minneapolis", "MN"),
+    ("Nashville", "TN"),
+]
+_PERMIT_CITIES_LOWER = {c.lower() for c, _ in PERMIT_CITIES}
+
+# Which scraper handles which city — used to route permit slots correctly
+from sources.building_permits import PERMIT_ENDPOINTS as _SOCRATA_CFG
+from sources.ckan_permits import CKAN_ENDPOINTS as _CKAN_CFG
+from sources.arcgis_permits import ARCGIS_ENDPOINTS as _ARCGIS_CFG
+
+_SOCRATA_CITIES_LOWER = {city for city, _ in _SOCRATA_CFG}
+_CKAN_CITIES_LOWER = {city for city, _ in _CKAN_CFG}
+_ARCGIS_CITIES_LOWER = {city for city, _ in _ARCGIS_CFG}
+
+# Singleton instances reused across all permit routing decisions
+_permit_scraper_socrata = BuildingPermitScraper()
+_permit_scraper_ckan = CKANPermitScraper()
+_permit_scraper_arcgis = ArcGISPermitScraper()
+
+
 def _build_scraper_pool() -> list[tuple]:
     """Build list of (scraper_instance, source_name) to rotate through."""
     pool = [
@@ -428,10 +455,14 @@ def _build_scraper_pool() -> list[tuple]:
         (MantaScraper(), "manta"),
         (BBBScraper(), "bbb"),
         (CityOpenDataScraper(), "city_open_data"),
-        # Building permits — consumer intent leads (homeowners actively in-market)
-        # Rotates in every ~7th slot so ~14% of targets get permit data
-        (BuildingPermitScraper(), "building_permits"),
-        (BuildingPermitScraper(), "building_permits"),  # double weight for consumer intent
+        # TDLR — state-licensed TX contractor businesses (electrician, well pump)
+        # 12,000+ TX electrical contractors with verified address + phone
+        (TDLRScraper(), "tdlr"),
+        # Building permits — consumer intent (homeowners actively in-market).
+        # Uses a placeholder; the actual scraper is selected in run_scrape()
+        # based on which city is chosen, routing to Socrata/CKAN/ArcGIS as needed.
+        (None, "building_permits"),
+        (None, "building_permits"),  # double weight → ~22% of slots = consumer leads
     ]
     if _yelp_scraper:
         pool.append((_yelp_scraper, "yelp"))
@@ -454,10 +485,28 @@ def run_scrape():
     scrapers = _build_scraper_pool()
     session = SessionLocal()
     total_new = 0
+    _permit_city_idx = 0  # cycles through PERMIT_CITIES for building_permits fallback
 
     try:
         for i, (canonical_industry, search_term, city, state) in enumerate(targets):
             scraper_obj, source_name = scrapers[i % len(scrapers)]
+
+            # For building_permits: redirect to a supported permit city if needed,
+            # then route to the correct scraper (Socrata / CKAN / ArcGIS).
+            if source_name == "building_permits":
+                if city.lower() not in _PERMIT_CITIES_LOWER:
+                    city, state = PERMIT_CITIES[_permit_city_idx % len(PERMIT_CITIES)]
+                    _permit_city_idx += 1
+                city_key = city.lower()
+                if city_key in _SOCRATA_CITIES_LOWER:
+                    scraper_obj = _permit_scraper_socrata
+                elif city_key in _CKAN_CITIES_LOWER:
+                    scraper_obj = _permit_scraper_ckan
+                elif city_key in _ARCGIS_CITIES_LOWER:
+                    scraper_obj = _permit_scraper_arcgis
+                else:
+                    scraper_obj = _permit_scraper_socrata  # fallback
+
             # For Yelp: check budget and whether this combo is worth a Yelp call
             if source_name == "yelp":
                 if not should_use_yelp(canonical_industry, city):
@@ -522,6 +571,16 @@ def run_scrape():
             except IntegrityError:
                 # Rare race condition with duplicate source_url across instances
                 session.rollback()
+                new_count = 0
+            except Exception as db_err:
+                # DB connection lost mid-run (Docker network blip) — reconnect and continue
+                print(f"[scraper{instance_label}] DB error, reconnecting: {db_err}")
+                try:
+                    session.close()
+                except Exception:
+                    pass
+                time.sleep(5)
+                session = SessionLocal()
                 new_count = 0
 
             print(f"[scraper{instance_label}]   -> {new_count} new leads added")

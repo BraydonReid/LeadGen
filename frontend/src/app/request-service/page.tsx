@@ -2,9 +2,9 @@ import ServiceRequestForm from "@/components/request-service/ServiceRequestForm"
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Get Free Quotes From Local Contractors — LeadGen",
+  title: "Get Free Quotes From Texas Contractors — Texas LeadGen",
   description:
-    "Tell us what service you need and get matched with local contractors. 100% free, no obligation.",
+    "Tell us what you need and get matched with local Texas contractors. Houston, Dallas, Austin, San Antonio and all Texas cities. 100% free, no obligation.",
 };
 
 export default function RequestServicePage() {
@@ -20,15 +20,15 @@ export default function RequestServicePage() {
           <h1 className="text-4xl lg:text-5xl font-extrabold mb-5 leading-tight">
             Get Free Quotes from
             <br />
-            <span className="text-teal-400">Local Contractors</span>
+            <span className="text-teal-400">Texas Contractors</span>
           </h1>
           <p className="text-lg text-slate-300 max-w-xl mx-auto leading-relaxed">
-            Tell us what you need. We match your request with verified local service professionals
+            Tell us what you need. We match your request with verified Texas service professionals
             who will reach out with competitive quotes — completely free to you.
           </p>
 
           <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-slate-400">
-            {["No cost to you ever", "Multiple quotes to compare", "Residential & commercial", "All 50 states"].map((item) => (
+            {["No cost to you ever", "Multiple quotes to compare", "Residential & commercial", "All Texas cities"].map((item) => (
               <span key={item} className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />

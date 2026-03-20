@@ -2,8 +2,8 @@ import LeadShop from "@/components/shop/LeadShop";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Shop Business Leads — LeadGen",
-  description: "Search and buy verified business leads by industry and location. Instant CSV download.",
+  title: "Shop Texas Business Leads — Texas LeadGen",
+  description: "Search and buy verified Texas contractor and business leads by industry and city. Houston, Dallas, Austin, San Antonio and all Texas cities. Instant CSV download.",
 };
 
 export default function ShopPage() {
@@ -12,10 +12,10 @@ export default function ShopPage() {
       {/* Page header */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Lead Marketplace</h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Texas Lead Marketplace</h1>
           <p className="text-slate-500">
-            Search our database by industry and location. Preview leads, select your quantity,
-            and download your CSV instantly after checkout.
+            Search Texas contractor and business leads by industry and city. Preview leads,
+            select your quantity, and download your CSV instantly after checkout.
           </p>
         </div>
       </div>

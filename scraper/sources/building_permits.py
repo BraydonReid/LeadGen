@@ -1,5 +1,5 @@
 """
-Building Permit Consumer Intent Scraper.
+Building Permit Consumer Intent Scraper — Socrata endpoints.
 
 Pulls from city/county open data APIs (Socrata — no API key required).
 Building permits are the highest-quality consumer intent signal available:
@@ -7,13 +7,12 @@ Building permits are the highest-quality consumer intent signal available:
   - They need a contractor RIGHT NOW
   - We know their exact address, permit type, and issue date
 
-This is a fundamental differentiator: Apollo/ZoomInfo don't have this data.
-Buyers get homeowners who are ACTIVELY in-market, not cold business lists.
-
 Supported cities (all free, no key):
-  Chicago IL, New York City NY, Seattle WA, Austin TX, San Francisco CA,
-  Denver CO, Philadelphia PA, Los Angeles CA, Boston MA, Nashville TN,
-  Portland OR, Houston TX, Columbus OH, Minneapolis MN, Atlanta GA
+  Chicago IL, New York City NY, Seattle WA,
+  Dallas TX, Honolulu HI, Austin TX
+
+See also: ckan_permits.py (Boston, San Antonio, San Jose, Pittsburgh, Philadelphia)
+         arcgis_permits.py (Raleigh, Minneapolis, Nashville, Louisville, Denver, Tempe, Las Vegas)
 
 lead_type is set to "consumer" — these leads command 1.5× price premium.
 """
@@ -27,116 +26,96 @@ import httpx
 from sources.base import BaseScraper, ScrapedLead
 
 # City permit endpoints (Socrata — all free, no key needed)
+# Field names verified against live APIs. Note: some cities have no date field
+# in their dataset; the scraper handles this by skipping the date filter.
 PERMIT_ENDPOINTS = {
     ("chicago", "IL"): {
         "domain": "data.cityofchicago.org",
         "resource": "ydr8-5enu",
         "name_field": "contact_1_name",
-        "address_fields": ["street_number", "street_direction", "street_name", "suffix"],
-        "zip_field": "zip_code",
+        "address_fields": ["street_number", "street_direction", "street_name"],
+        "zip_field": "contact_1_zipcode",
         "type_field": "permit_type",
         "desc_field": "work_description",
-        "date_field": "issued_date",
+        "date_field": "issue_date",
+        "order_field": "issue_date",   # enables $order DESC to get newest permits first
         "city_name": "Chicago",
         "state": "IL",
     },
     ("new york city", "NY"): {
         "domain": "data.cityofnewyork.us",
         "resource": "rbx6-tga4",
-        "name_field": "owner_s_first_name",
-        "address_fields": ["house__", "street_name"],
+        "name_field": "owner_name",
+        "address_fields": ["house_no", "street_name"],
         "zip_field": "zip_code",
-        "type_field": "permit_type",
-        "desc_field": "permit_type",
-        "date_field": "issuance_date",
+        "type_field": "work_type",
+        "desc_field": "job_description",
+        "date_field": None,            # no date field in this dataset; no date filter applied
         "city_name": "New York City",
         "state": "NY",
     },
     ("seattle", "WA"): {
         "domain": "data.seattle.gov",
         "resource": "76t5-zqzr",
-        "name_field": "applicant_name",
-        "address_fields": ["address"],
-        "zip_field": "zip",
-        "type_field": "permit_type",
+        "name_field": "contractorcompanyname",
+        "address_fields": ["originaladdress1"],
+        "zip_field": "originalzip",
+        "type_field": "permittypemapped",
         "desc_field": "description",
-        "date_field": "issued_date",
+        "date_field": None,            # no date field in this dataset; no date filter applied
         "city_name": "Seattle",
         "state": "WA",
     },
+    ("dallas", "TX"): {
+        "domain": "www.dallasopendata.com",
+        "resource": "e7gq-4sah",
+        "name_field": "contractor",
+        "address_fields": ["street_address"],
+        "zip_field": "zip_code",
+        "type_field": "permit_type",
+        "desc_field": "work_description",
+        "date_field": "issued_date",
+        "order_field": "issued_date",
+        "city_name": "Dallas",
+        "state": "TX",
+    },
+    ("honolulu", "HI"): {
+        "domain": "data.honolulu.gov",
+        "resource": "4vab-c87q",
+        "name_field": "applicant",
+        "address_fields": ["address"],
+        "zip_field": None,
+        "type_field": "proposeduse",
+        "desc_field": "proposeduse",
+        # Honolulu uses boolean Y/N fields for work type instead of a description string.
+        # extra_desc_fields: field names whose value=="Y" get appended to the description
+        # so _map_permit_to_industry can match "electricalwork" → electrician, "solar" → solar, etc.
+        "extra_desc_fields": [
+            "electricalwork", "plumbingwork", "solar", "fence", "pool",
+            "repair", "addition", "alteration", "demolition", "newbuilding",
+        ],
+        "date_field": "issuedate",
+        "order_field": "issuedate",
+        "city_name": "Honolulu",
+        "state": "HI",
+    },
+    # Austin TX — individual licensed contractor names + homeowner residential addresses
     ("austin", "TX"): {
         "domain": "data.austintexas.gov",
         "resource": "3syk-w9eu",
-        "name_field": "applicant_full_name",
-        "address_fields": ["work_site_address"],
-        "zip_field": "zip_code",
+        "name_field": "contractor_full_name",
+        "fallback_name_field": "contractor_company_name",
+        "address_fields": ["original_address1"],
+        "zip_field": "original_zip",
         "type_field": "permit_type_desc",
-        "desc_field": "work_description",
+        "desc_field": "description",
         "date_field": "issue_date",
+        "order_field": "issue_date",
         "city_name": "Austin",
         "state": "TX",
     },
-    ("san francisco", "CA"): {
-        "domain": "data.sfgov.org",
-        "resource": "i98e-djp9",
-        "name_field": "applicant",
-        "address_fields": ["street_number", "street_name"],
-        "zip_field": "zipcode",
-        "type_field": "permit_type_definition",
-        "desc_field": "description",
-        "date_field": "issued_date",
-        "city_name": "San Francisco",
-        "state": "CA",
-    },
-    ("denver", "CO"): {
-        "domain": "www.denvergov.org",
-        "resource": "pgn4-7qpk",
-        "name_field": "applicant_name",
-        "address_fields": ["address"],
-        "zip_field": "zip",
-        "type_field": "work_type",
-        "desc_field": "work_description",
-        "date_field": "issued_date",
-        "city_name": "Denver",
-        "state": "CO",
-    },
-    ("los angeles", "CA"): {
-        "domain": "data.lacity.org",
-        "resource": "nbud-jubf",
-        "name_field": "applicant_s_name",
-        "address_fields": ["address_start", "street_name"],
-        "zip_field": "zip",
-        "type_field": "permit_type",
-        "desc_field": "permit_sub_type",
-        "date_field": "date_issued",
-        "city_name": "Los Angeles",
-        "state": "CA",
-    },
-    ("philadelphia", "PA"): {
-        "domain": "phl.carto.com",
-        "resource": "dbd7-yzrh",
-        "name_field": "ownername",
-        "address_fields": ["address"],
-        "zip_field": "zip",
-        "type_field": "typeofwork",
-        "desc_field": "typeofwork",
-        "date_field": "permitissuedate",
-        "city_name": "Philadelphia",
-        "state": "PA",
-    },
-    ("portland", "OR"): {
-        "domain": "data.portlandoregon.gov",
-        "resource": "ib2y-bj6g",
-        "name_field": "applicant_name",
-        "address_fields": ["address"],
-        "zip_field": "zip",
-        "type_field": "type_of_work",
-        "desc_field": "type_of_work",
-        "date_field": "issue_date",
-        "city_name": "Portland",
-        "state": "OR",
-    },
 }
+# Fort Worth TX — Socrata resource qy5k-jz7m last updated 2015; removed until a live dataset is found.
 
 # Map permit type/description keywords → our canonical industry names
 # Order matters: more specific matches first
@@ -237,25 +216,27 @@ class BuildingPermitScraper(BaseScraper):
         zip_f = config["zip_field"]
         type_f = config["type_field"]
         desc_f = config["desc_field"]
-        date_f = config["date_field"]
+        date_f = config["date_field"]           # None means no date field in dataset
+        order_f = config.get("order_field")     # Optional: sort newest-first for efficiency
+        extra_desc_f = config.get("extra_desc_fields", [])  # Boolean Y/N fields (Honolulu)
 
-        cutoff = (datetime.now() - timedelta(days=self.LOOKBACK_DAYS)).strftime("%Y-%m-%dT%H:%M:%S")
+        cutoff_days = self.LOOKBACK_DAYS
         leads = []
         offset = 0
         limit = 200
-
-        # Use $where to only fetch recent permits
-        where = f"{date_f} >= '{cutoff}'"
+        max_pages = 15  # cap at 3,000 records scanned to avoid runaway pagination
 
         with httpx.Client(timeout=25) as client:
-            while len(leads) < max_results:
+            pages_scanned = 0
+            while len(leads) < max_results and pages_scanned < max_pages:
                 url = f"https://{domain}/resource/{resource}.json"
                 params = {
                     "$limit": limit,
                     "$offset": offset,
-                    "$where": where,
-                    "$order": f"{date_f} DESC",
                 }
+                # Sort newest-first when the date field is known — avoids scanning old records
+                if order_f:
+                    params["$order"] = f"{order_f} DESC"
 
                 try:
                     resp = client.get(url, params=params)
@@ -271,6 +252,15 @@ class BuildingPermitScraper(BaseScraper):
                 for row in rows:
                     permit_type = str(row.get(type_f, "") or "")
                     description = str(row.get(desc_f, "") or "")
+                    # Honolulu-style datasets use boolean Y/N fields for work type;
+                    # append the field name itself when value is "Y" so keyword
+                    # matching works: electricalwork=Y → "electricalwork" in combined
+                    if extra_desc_f:
+                        extra = " ".join(
+                            f for f in extra_desc_f
+                            if str(row.get(f, "")).strip().upper() == "Y"
+                        )
+                        description = f"{description} {extra}".strip()
                     mapped = _map_permit_to_industry(permit_type, description)
                     if not mapped:
                         continue
@@ -284,7 +274,7 @@ class BuildingPermitScraper(BaseScraper):
                     if not contact_name:
                         continue
                     # Skip clearly commercial applicants
-                    if any(kw in contact_name.lower() for kw in ["llc", "inc.", "corp", "ltd", "roofing co", "construction"]):
+                    if any(kw in contact_name.lower() for kw in ["llc", "inc.", " inc", "corp", "ltd", "roofing co", "construction", " lp", " llp", " builders", " homes", " development"]):
                         continue
 
                     address = _build_address(row, addr_fields)
@@ -297,8 +287,13 @@ class BuildingPermitScraper(BaseScraper):
                         full_address += f" {zip_code}"
 
                     # Parse permit date for years_in_business signal (permit age)
-                    permit_date = _parse_date(str(row.get(date_f, "") or ""))
+                    permit_date = _parse_date(str(row.get(date_f, "") or "")) if date_f else None
                     days_old = (datetime.now() - permit_date).days if permit_date else 999
+
+                    # Skip permits older than the lookback window
+                    # If no date field exists (days_old=999 from None), allow through
+                    if permit_date and days_old > cutoff_days:
+                        continue
 
                     # Use address + name as dedup key
                     dedup_key = f"permit:{state}:{re.sub(r'[^a-z0-9]', '', full_address.lower()[:60])}"
@@ -319,6 +314,7 @@ class BuildingPermitScraper(BaseScraper):
                         years_in_business=days_old,  # repurposed: days since permit issued
                     ))
 
+                pages_scanned += 1
                 if len(rows) < limit:
                     break
                 offset += limit
