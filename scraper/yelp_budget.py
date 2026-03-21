@@ -15,7 +15,7 @@ from pathlib import Path
 
 BUDGET_FILE = Path("/app/history/yelp_budget.json")
 MONTHLY_LIMIT = 5000
-DAILY_LIMIT = 160   # 5000 / 31 days, with buffer
+DAILY_LIMIT = 450   # ~500/day free tier, with small buffer
 
 
 def _load() -> dict:

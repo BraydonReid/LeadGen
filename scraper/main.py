@@ -77,7 +77,7 @@ if os.environ.get("FOURSQUARE_API_KEY"):
 # Each instance gets its own history file so east/west don't clobber each other
 _instance = os.environ.get("SCRAPER_INSTANCE", "all")
 HISTORY_FILE = Path(f"/app/history/scrape_history_{_instance}.json")
-TARGETS_PER_RUN = 50  # doubled from 20
+TARGETS_PER_RUN = 100
 
 # Multi-instance state split — set SCRAPER_INSTANCE=east or =west in env
 # Each instance handles half the states, eliminating duplicate work
@@ -590,7 +590,7 @@ def run_scrape():
             history[key] = datetime.now(timezone.utc).isoformat()
             _save_history(history)
 
-            pause = random.uniform(20, 40)
+            pause = random.uniform(10, 20)
             print(f"[scraper{instance_label}] Pausing {pause:.0f}s...")
             time.sleep(pause)
 
@@ -607,9 +607,9 @@ def main():
 
     if args.schedule:
         scheduler = BlockingScheduler()
-        scheduler.add_job(run_scrape, "interval", hours=6)
+        scheduler.add_job(run_scrape, "interval", hours=3)
         instance_label = f" [{SCRAPER_INSTANCE}]" if SCRAPER_INSTANCE != "all" else ""
-        print(f"[scraper{instance_label}] Scheduler started — running every 6 hours.")
+        print(f"[scraper{instance_label}] Scheduler started — running every 3 hours.")
         run_scrape()
         try:
             scheduler.start()

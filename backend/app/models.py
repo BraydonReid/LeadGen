@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, Integer, SmallInteger, String, UniqueConstraint, func
+from sqlalchemy import Boolean, DateTime, Float, Integer, SmallInteger, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -35,6 +35,10 @@ class Lead(Base):
     yelp_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
     review_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     years_in_business: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
+    # Email enrichment — Hunter.io discovered emails
+    email_source: Mapped[str | None] = mapped_column(String(20), nullable=True)   # 'scraper' | 'hunter'
+    email_found_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    enrichment_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Purchase(Base):
@@ -96,3 +100,49 @@ class IndustryDemand(Base):
     __table_args__ = (
         UniqueConstraint("industry", "state", "city", name="uq_demand_industry_state_city"),
     )
+
+
+class EmailCampaign(Base):
+    __tablename__ = "email_campaigns"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="draft")  # draft|active|paused|complete
+    industry_filter: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    state_filter: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    city_filter: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    template_subject: Mapped[str] = mapped_column(String(500), nullable=False)
+    template_body_html: Mapped[str] = mapped_column(Text, nullable=False)
+    from_name: Mapped[str] = mapped_column(String(100), nullable=False, server_default="LeadGen")
+    from_email: Mapped[str] = mapped_column(String(255), nullable=False)
+    sequence_days: Mapped[str] = mapped_column(String(50), nullable=False, server_default="0,3,8")
+    emails_sent: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    emails_opened: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    emails_clicked: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class EmailSend(Base):
+    __tablename__ = "email_sends"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    campaign_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    lead_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    sequence_step: Mapped[int] = mapped_column(SmallInteger, nullable=False, server_default="1")
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    next_send_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
+    opened_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    clicked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    unsubscribed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    unsubscribe_token: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    resend_message_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class EmailUnsubscribe(Base):
+    """Global unsubscribe list — checked before every send."""
+    __tablename__ = "email_unsubscribes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    unsubscribed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

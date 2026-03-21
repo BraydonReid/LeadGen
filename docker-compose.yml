@@ -48,6 +48,11 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_SCORING_MODEL: llama3.1:8b
       OLLAMA_SEARCH_MODEL: llama3.1:8b
+      HUNTER_API_KEY: ${HUNTER_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-leads@yourdomain.com}
+      RESEND_FROM_NAME: ${RESEND_FROM_NAME:-LeadGen}
+      SITE_URL: ${SITE_URL:-http://localhost:3000}
     ports:
       - "8000:8000"
     volumes:
@@ -91,6 +96,42 @@ services:
     restart: unless-stopped
     command: python main.py --schedule
 
+  # North instance — extra parallelism for faster initial data fill
+  scraper-north:
+    build: ./scraper
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: north
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - ./scraper:/app
+      - scraper_north_history:/app/history
+    restart: unless-stopped
+    command: python main.py --schedule
+
+  # South instance — extra parallelism for faster initial data fill
+  scraper-south:
+    build: ./scraper
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: south
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - ./scraper:/app
+      - scraper_south_history:/app/history
+    restart: unless-stopped
+    command: python main.py --schedule
+
   frontend:
     build: ./frontend
     depends_on:
@@ -108,3 +149,5 @@ volumes:
   ollama_models:
   scraper_east_history:
   scraper_west_history:
+  scraper_north_history:
+  scraper_south_history:
