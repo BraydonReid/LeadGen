@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import UTMCapture from "@/components/UTMCapture";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +27,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
               <Link href="/shop" className="hover:text-blue-600 transition-colors">Shop</Link>
               <Link href="/leads" className="hover:text-blue-600 transition-colors">Browse by Industry</Link>
+              <Link href="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link>
+              <Link href="/my-subscription" className="hover:text-blue-600 transition-colors">My Subscription</Link>
               <a href="/#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</a>
               <Link href="/request-service" className="hover:text-teal-600 transition-colors">Get Free Quotes</Link>
             </nav>
@@ -39,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
+        <UTMCapture />
         <main className="flex-1">{children}</main>
 
         <footer className="bg-slate-900 text-slate-400">
@@ -55,8 +59,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="text-white font-semibold text-sm mb-4">Product</div>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/shop" className="hover:text-white transition-colors">Browse Texas Leads</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="/subscribe" className="hover:text-white transition-colors">Subscribe — $99/month</Link></li>
+                <li><Link href="/my-subscription" className="hover:text-white transition-colors">My Subscription</Link></li>
                 <li><a href="/#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
-                <li><a href="/#industries" className="hover:text-white transition-colors">Industries</a></li>
                 <li><Link href="/request-service" className="hover:text-white transition-colors">Request a Service</Link></li>
               </ul>
             </div>

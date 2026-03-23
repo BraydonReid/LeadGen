@@ -1,7 +1,7 @@
 "use client";
 
-import { aiSearch, requestFreeSample, shopSearch } from "@/lib/api";
-import type { AISearchIntent, ShopResponse } from "@/types";
+import { aiSearch, getOrders, requestFreeSample, shopSearch, type ShopFilters } from "@/lib/api";
+import type { AISearchIntent, OrderSummary, ShopResponse } from "@/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import AISearchBar from "./AISearchBar";
@@ -44,6 +44,19 @@ export default function LeadShop() {
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
 
+  // Advanced filters
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [hasYelp, setHasYelp] = useState(false);
+  const [yelpMode, setYelpMode] = useState<"any" | "high" | "struggling">("any");
+  const [addedDays, setAddedDays] = useState<number | undefined>(undefined);
+
+  const getFilters = (): ShopFilters => ({
+    hasYelp: hasYelp || yelpMode !== "any" || undefined,
+    yelpMin: yelpMode === "high" ? 4.0 : undefined,
+    yelpMax: yelpMode === "struggling" ? 3.0 : undefined,
+    addedDays: addedDays,
+  });
+
   // AI search mode
   const [searchMode, setSearchMode] = useState<"standard" | "ai">("standard");
   const [aiIntent, setAiIntent] = useState<AISearchIntent | null>(null);
@@ -53,6 +66,55 @@ export default function LeadShop() {
   const [sampleLoading, setSampleLoading] = useState(false);
   const [sampleDone, setSampleDone] = useState(false);
   const [sampleError, setSampleError] = useState<string | null>(null);
+
+  // Order history — email-based, no account needed
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [emailInputVisible, setEmailInputVisible] = useState(false);
+  const [emailDraft, setEmailDraft] = useState("");
+  const [orders, setOrders] = useState<OrderSummary[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+
+  // Load saved email from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("buyerEmail");
+    if (saved) {
+      setBuyerEmail(saved);
+      fetchOrders(saved);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchOrders = async (email: string) => {
+    setOrdersLoading(true);
+    try {
+      const data = await getOrders(email);
+      setOrders(data.purchases);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const handleSetEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = emailDraft.trim().toLowerCase();
+    if (!email) return;
+    setBuyerEmail(email);
+    localStorage.setItem("buyerEmail", email);
+    setEmailInputVisible(false);
+    fetchOrders(email);
+  };
+
+  const handleClearEmail = () => {
+    setBuyerEmail("");
+    setEmailDraft("");
+    setOrders([]);
+    localStorage.removeItem("buyerEmail");
+  };
+
+  // Check if current results match a previously purchased search
+  const duplicatePurchase = results && orders.find((o) =>
+    o.industry.toLowerCase() === results.query.industry.toLowerCase() &&
+    o.state.toUpperCase() === results.query.state.toUpperCase()
+  );
 
   const doSearch = async (
     ind: string,
@@ -78,6 +140,7 @@ export default function LeadShop() {
         lt === "all" ? undefined : lt,
         withRadius && zip ? zip : undefined,
         withRadius && zip ? radius : undefined,
+        getFilters(),
       );
       setResults(data);
     } catch (e: unknown) {
@@ -281,6 +344,93 @@ export default function LeadShop() {
             </button>
           </div>
 
+          {/* Advanced filters toggle */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-xs text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1"
+            >
+              <span>{showAdvanced ? "▾" : "▸"}</span> Advanced filters
+              {(hasYelp || yelpMode !== "any" || addedDays) && (
+                <span className="ml-1 bg-blue-100 text-blue-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                  {[hasYelp || yelpMode !== "any", !!addedDays].filter(Boolean).length} active
+                </span>
+              )}
+            </button>
+            {showAdvanced && (
+              <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                {/* Freshness */}
+                <div>
+                  <p className="text-xs font-semibold text-slate-600 mb-2">Lead Freshness</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Any time", value: undefined },
+                      { label: "Last 7 days", value: 7 },
+                      { label: "Last 30 days", value: 30 },
+                      { label: "Last 90 days", value: 90 },
+                    ].map(({ label, value }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setAddedDays(value)}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                          addedDays === value
+                            ? "bg-blue-600 text-white"
+                            : "bg-white border border-slate-200 text-slate-600 hover:border-blue-300"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Yelp/Reputation */}
+                <div>
+                  <p className="text-xs font-semibold text-slate-600 mb-1">Yelp Reputation</p>
+                  <p className="text-xs text-slate-400 mb-2">
+                    Target businesses by their online reputation — great for sales outreach strategy.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Any", value: "any", desc: "" },
+                      { label: "⭐ Yelp Rated (any)", value: "has_yelp", desc: "Has Yelp profile" },
+                      { label: "⭐⭐⭐⭐ Top Rated (4.0+)", value: "high", desc: "Established, growing businesses" },
+                      { label: "⚠ Struggling (≤3.0)", value: "struggling", desc: "Businesses that need help — best for agencies" },
+                    ].map(({ label, value }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          if (value === "has_yelp") { setHasYelp(true); setYelpMode("any"); }
+                          else if (value === "any") { setHasYelp(false); setYelpMode("any"); }
+                          else { setHasYelp(false); setYelpMode(value as "high" | "struggling"); }
+                        }}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                          (value === "any" && !hasYelp && yelpMode === "any") ||
+                          (value === "has_yelp" && hasYelp) ||
+                          ((value as string) === yelpMode && value !== "any" && value !== "has_yelp")
+                            ? value === "struggling"
+                              ? "bg-amber-500 text-white"
+                              : "bg-blue-600 text-white"
+                            : "bg-white border border-slate-200 text-slate-600 hover:border-blue-300"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {yelpMode === "struggling" && (
+                    <p className="text-xs text-amber-600 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Struggling businesses (≤3.0 Yelp) are ideal leads for marketing agencies, reputation management, and CRM vendors. They know they have a problem and are actively looking for solutions.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Search mode + lead type toggles */}
           <div className="flex flex-wrap items-center gap-4">
             {/* Radius toggle */}
@@ -338,6 +488,94 @@ export default function LeadShop() {
         )}
       </div>
 
+      {/* Order history — email-based */}
+      <div className="mb-6">
+        {!buyerEmail ? (
+          <div className="flex items-center gap-3">
+            {!emailInputVisible ? (
+              <button
+                type="button"
+                onClick={() => setEmailInputVisible(true)}
+                className="text-xs text-slate-400 hover:text-blue-600 transition-colors"
+              >
+                Already a customer? Enter your email to see past orders →
+              </button>
+            ) : (
+              <form onSubmit={handleSetEmail} className="flex items-center gap-2">
+                <input
+                  type="email"
+                  required
+                  autoFocus
+                  placeholder="your@email.com"
+                  value={emailDraft}
+                  onChange={(e) => setEmailDraft(e.target.value)}
+                  className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Look up orders
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEmailInputVisible(false)}
+                  className="text-slate-400 hover:text-slate-600 text-xs"
+                >
+                  Cancel
+                </button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xs text-slate-500">
+                Showing orders for <span className="font-semibold text-slate-700">{buyerEmail}</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleClearEmail}
+                className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+            {ordersLoading && (
+              <p className="text-xs text-slate-400">Loading order history…</p>
+            )}
+            {!ordersLoading && orders.length === 0 && (
+              <p className="text-xs text-slate-400">No purchases found for this email.</p>
+            )}
+            {!ordersLoading && orders.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {orders.map((o) => (
+                  <div
+                    key={o.id}
+                    className="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1.5 text-xs"
+                  >
+                    <span className="font-semibold text-slate-700">{o.quantity.toLocaleString()} {o.industry}</span>
+                    <span className="text-slate-500">·</span>
+                    <span className="text-slate-500">{o.city ? `${o.city}, ` : ""}{o.state}</span>
+                    <span className="text-slate-400">·</span>
+                    <span className="text-slate-400">
+                      {new Date(o.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                    <a
+                      href={`/success?session_id=${o.stripe_session_id}`}
+                      className="text-blue-500 hover:text-blue-700 font-semibold ml-1"
+                      title="Re-download"
+                    >
+                      ↓
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Intent lead CTA — shown when not filtering for consumer */}
       {!searched && leadType !== "consumer" && (
         <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -377,6 +615,29 @@ export default function LeadShop() {
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           {/* Left: results */}
           <div className="lg:col-span-2 space-y-5">
+            {/* Duplicate purchase warning */}
+            {duplicatePurchase && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-sm">
+                <span className="text-amber-500 text-lg leading-none">⚠</span>
+                <div>
+                  <p className="font-semibold text-amber-800">You&apos;ve purchased this before</p>
+                  <p className="text-amber-700 mt-0.5">
+                    You bought{" "}
+                    <strong>{duplicatePurchase.quantity.toLocaleString()} {duplicatePurchase.industry} leads</strong>
+                    {duplicatePurchase.city ? ` in ${duplicatePurchase.city}, ` : " in "}
+                    {duplicatePurchase.state} on{" "}
+                    {new Date(duplicatePurchase.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.{" "}
+                    <a
+                      href={`/success?session_id=${duplicatePurchase.stripe_session_id}`}
+                      className="underline font-semibold hover:text-amber-900"
+                    >
+                      Re-download that order
+                    </a>{" "}
+                    or continue to buy new leads added since then.
+                  </p>
+                </div>
+              </div>
+            )}
             {/* Result summary */}
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>

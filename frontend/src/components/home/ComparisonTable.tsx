@@ -1,5 +1,15 @@
 const rows = [
   {
+    feature: "Data freshness",
+    us: { text: "Scraped within the last 30 days", positive: true },
+    them: { text: "Often 12–24 months old", positive: false },
+  },
+  {
+    feature: "Phone number coverage",
+    us: { text: "98% of leads have a phone number", positive: true },
+    them: { text: "Typically 60–75% coverage", positive: false },
+  },
+  {
     feature: "No sales call required",
     us: { text: "Always — buy instantly online", positive: true },
     them: { text: "Most require a demo or rep", positive: false },

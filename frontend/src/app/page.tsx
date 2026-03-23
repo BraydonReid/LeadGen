@@ -22,20 +22,21 @@ export default async function HomePage() {
         <IndustryGrid industries={stats.industries} />
       </section>
 
-      {/* For small businesses CTA */}
+      {/* CTA */}
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-10 lg:p-16 text-white shadow-xl shadow-blue-500/20">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Built for Texas Business Owners
+              The freshest contractor leads in Texas
             </h2>
             <p className="text-blue-100 text-lg mb-3 max-w-2xl mx-auto leading-relaxed">
               Traditional lead services charge thousands per month and lock you into long contracts.
-              We built Texas LeadGen so any Texas contractor can access quality local leads — without the overhead.
+              We built LeadGen so any Texas contractor can access quality local leads — without the overhead.
             </p>
             <p className="text-blue-200 text-base mb-10 max-w-xl mx-auto">
-              No phone calls to sales reps. No monthly fees. Pick your Texas city and industry,
-              choose how many leads you need, and download your list in minutes.
+              No phone calls to sales reps. Pick your city and industry,
+              choose how many leads you need, and download your CSV in minutes.
+              Every lead scraped within the last 30 days. 98% have a verified phone number.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
@@ -44,12 +45,12 @@ export default async function HomePage() {
               >
                 Browse Texas Leads →
               </Link>
-              <a
-                href="#how-it-works"
+              <Link
+                href="/pricing"
                 className="border border-white/30 text-white font-semibold px-8 py-4 rounded-xl text-lg hover:bg-white/10 transition-all"
               >
-                Learn More
-              </a>
+                See Pricing →
+              </Link>
             </div>
           </div>
         </div>

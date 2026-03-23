@@ -33,6 +33,12 @@ class SearchQuery(BaseModel):
     lead_type: str | None = None
     zip_code: str | None = None
     radius_miles: float | None = None
+    # Advanced filters
+    has_yelp: bool | None = None
+    yelp_min: float | None = None
+    yelp_max: float | None = None
+    added_days: int | None = None
+    min_quality: int | None = None
 
 
 class SearchResponse(BaseModel):
@@ -68,6 +74,11 @@ class CheckoutRequest(BaseModel):
     zip_code: str | None = None
     radius_miles: float | None = None
     promo_code: str | None = None
+    # Ad attribution — passed from frontend UTM params
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_campaign: str | None = None
+    referrer: str | None = None
 
 
 class CheckoutResponse(BaseModel):

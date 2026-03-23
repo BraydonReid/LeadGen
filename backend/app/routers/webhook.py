@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.config import settings
 from app.database import AsyncSessionLocal
-from app.models import IndustryDemand, Purchase
+from app.models import IndustryDemand, Purchase, Subscription
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +29,26 @@ async def stripe_webhook(request: Request):
     except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        await _fulfill_purchase(session)
+    event_type = event["type"]
+    obj = event["data"]["object"]
+
+    if event_type == "checkout.session.completed":
+        if obj.get("mode") == "subscription":
+            from app.routers.subscriptions import handle_subscription_created
+            async with AsyncSessionLocal() as db:
+                await handle_subscription_created(obj, db)
+        else:
+            await _fulfill_purchase(obj)
+
+    elif event_type == "invoice.payment_succeeded":
+        from app.routers.subscriptions import handle_invoice_paid
+        async with AsyncSessionLocal() as db:
+            await handle_invoice_paid(obj, db)
+
+    elif event_type == "customer.subscription.deleted":
+        from app.routers.subscriptions import handle_subscription_canceled
+        async with AsyncSessionLocal() as db:
+            await handle_subscription_canceled(obj, db)
 
     return {"status": "ok"}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { createCheckout, validatePromoCode } from "@/lib/api";
+import { getUTM } from "@/lib/utm";
 import { BULK_DISCOUNTS, calcTotal } from "@/types";
 import { useEffect, useState } from "react";
 
@@ -35,12 +36,14 @@ export default function PriceCalculator({ totalCount, avgLeadPrice, industry, st
     setLoading(true);
     setError(null);
     try {
+      const utm = getUTM();
       const res = await createCheckout({
         industry, state, city, quantity,
         lead_type: leadType,
         zip_code: zipCode,
         radius_miles: radiusMiles,
         promo_code: promoApplied ? promoCode.trim().toUpperCase() : undefined,
+        ...utm,
       });
       window.location.href = res.checkout_url;
     } catch (e: unknown) {

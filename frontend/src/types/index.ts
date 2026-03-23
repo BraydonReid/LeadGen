@@ -26,6 +26,11 @@ export interface SearchQuery {
   lead_type: string | null;
   zip_code: string | null;
   radius_miles: number | null;
+  has_yelp?: boolean | null;
+  yelp_min?: number | null;
+  yelp_max?: number | null;
+  added_days?: number | null;
+  min_quality?: number | null;
 }
 
 export interface ShopResponse {
@@ -55,6 +60,10 @@ export interface CheckoutRequest {
   zip_code?: string;
   radius_miles?: number;
   promo_code?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  referrer?: string;
 }
 
 export interface LeadReportResponse {
@@ -119,6 +128,43 @@ export interface AISearchResponse {
   avg_lead_price: number;
   preview: PricedLead[];
   query: SearchQuery;
+}
+
+export interface OrderSummary {
+  id: number;
+  industry: string;
+  state: string;
+  city: string | null;
+  quantity: number;
+  amount_dollars: number;
+  created_at: string;
+  stripe_session_id: string;
+}
+
+export interface OrdersResponse {
+  purchases: OrderSummary[];
+}
+
+export interface SubscriptionStatus {
+  subscribed: boolean;
+  status?: string;
+  plan?: string;
+  leads_per_month?: number;
+  credits_remaining?: number;
+  current_period_end?: string;
+  created_at?: string;
+}
+
+export interface SubscriptionDownload {
+  industry: string;
+  state: string;
+  city: string | null;
+  quantity: number;
+  downloaded_at: string;
+}
+
+export interface SubscriptionHistory {
+  downloads: SubscriptionDownload[];
 }
 
 // Bulk discount tiers — mirrors backend pricing.py

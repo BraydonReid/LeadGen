@@ -10,10 +10,9 @@ import logging
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import settings
 from app.models import Lead
 from app.schemas import AISearchIntent, AISearchResponse, PricedLeadPreview, SearchQuery
-from app.services.ollama_client import generate
+from app.services.openai_client import generate
 from app.services.pricing import calculate_lead_price
 
 logger = logging.getLogger(__name__)
@@ -53,7 +52,7 @@ Respond ONLY with a valid JSON object and nothing else:
 async def parse_search_intent(query: str) -> AISearchIntent:
     """Use LLM to extract structured intent from a natural language query."""
     prompt = PARSE_PROMPT.format(query=query)
-    response = await generate(settings.ollama_search_model, prompt, temperature=0.0)
+    response = await generate(prompt, temperature=0.0)
 
     # Robust JSON extraction — LLMs sometimes add surrounding text
     start = response.find("{")

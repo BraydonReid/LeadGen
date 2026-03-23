@@ -3,14 +3,25 @@ import type {
   CheckoutRequest,
   CheckoutResponse,
   LeadReportResponse,
+  OrdersResponse,
   SampleRequestData,
   ServiceRequestFormData,
   ServiceRequestResponse,
   ShopResponse,
   StatsResponse,
+  SubscriptionHistory,
+  SubscriptionStatus,
 } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+export interface ShopFilters {
+  hasYelp?: boolean;
+  yelpMin?: number;
+  yelpMax?: number;
+  addedDays?: number;
+  minQuality?: number;
+}
 
 export async function shopSearch(
   industry: string,
@@ -19,6 +30,7 @@ export async function shopSearch(
   leadType?: string,
   zipCode?: string,
   radiusMiles?: number,
+  filters?: ShopFilters,
 ): Promise<ShopResponse> {
   const params = new URLSearchParams({ industry });
   if (state) params.set("state", state);
@@ -26,6 +38,11 @@ export async function shopSearch(
   if (leadType && leadType !== "all") params.set("lead_type", leadType);
   if (zipCode) params.set("zip_code", zipCode);
   if (radiusMiles) params.set("radius_miles", String(radiusMiles));
+  if (filters?.hasYelp) params.set("has_yelp", "true");
+  if (filters?.yelpMin != null) params.set("yelp_min", String(filters.yelpMin));
+  if (filters?.yelpMax != null) params.set("yelp_max", String(filters.yelpMax));
+  if (filters?.addedDays != null) params.set("added_days", String(filters.addedDays));
+  if (filters?.minQuality != null) params.set("min_quality", String(filters.minQuality));
   const res = await fetch(`${API_BASE}/api/shop?${params}`, { cache: "no-store" });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -115,6 +132,36 @@ export async function aiSearch(query: string, maxResults = 50): Promise<AISearch
     throw new Error((err as { detail?: string }).detail ?? "AI search failed");
   }
   return res.json();
+}
+
+export async function getOrders(email: string): Promise<OrdersResponse> {
+  const res = await fetch(
+    `${API_BASE}/api/orders?email=${encodeURIComponent(email.trim().toLowerCase())}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return { purchases: [] };
+  return res.json();
+}
+
+export async function createSubscriptionCheckout(email: string, referralCode?: string): Promise<{ checkout_url: string }> {
+  const res = await fetch(`${API_BASE}/api/subscribe`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, referral_code: referralCode ?? null }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { detail?: string }).detail ?? "Subscription checkout failed");
+  }
+  return res.json();
+}
+
+export async function requestMagicLink(email: string): Promise<void> {
+  await fetch(`${API_BASE}/api/subscription/auth/request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
 }
 
 export async function submitServiceRequest(

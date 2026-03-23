@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str
     stripe_publishable_key: str
     cors_origins: list[str] = ["http://localhost:3000"]
-    ollama_base_url: str = "http://ollama:11434"
-    ollama_scoring_model: str = "llama3.1:8b"
-    ollama_search_model: str = "llama3.1:8b"
+    # OpenAI — AI scoring and natural language search
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
     # Email enrichment — Hunter.io
     hunter_api_key: str = ""
     # Cold email sending — Resend

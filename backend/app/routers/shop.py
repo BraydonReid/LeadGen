@@ -25,6 +25,12 @@ async def shop_search(
     lead_type: str | None = Query(default=None),
     zip_code: str | None = Query(default=None),
     radius_miles: float | None = Query(default=None),
+    # Advanced filters
+    has_yelp: bool | None = Query(default=None),
+    yelp_min: float | None = Query(default=None, ge=1.0, le=5.0),
+    yelp_max: float | None = Query(default=None, ge=1.0, le=5.0),
+    added_days: int | None = Query(default=None, ge=1, le=365),
+    min_quality: int | None = Query(default=None, ge=0, le=100),
     db: AsyncSession = Depends(get_db),
 ):
     industry_lower = industry.strip().lower()
@@ -66,6 +72,19 @@ async def shop_search(
     if lead_type and lead_type in ("business", "consumer"):
         filters.append(Lead.lead_type == lead_type)
 
+    # Advanced filters
+    if has_yelp:
+        filters.append(Lead.yelp_rating.isnot(None))
+    if yelp_min is not None:
+        filters.append(Lead.yelp_rating >= yelp_min)
+    if yelp_max is not None:
+        filters.append(Lead.yelp_rating <= yelp_max)
+    if added_days is not None:
+        cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=added_days)
+        filters.append(Lead.scraped_date >= cutoff)
+    if min_quality is not None:
+        filters.append(Lead.quality_score >= min_quality)
+
     # Total count
     count_stmt = select(func.count()).select_from(Lead).where(*filters)
     total_count = (await db.execute(count_stmt)).scalar_one()
@@ -80,13 +99,16 @@ async def shop_search(
     sample_result = await db.execute(sample_stmt)
     sample_leads = sample_result.scalars().all()
 
-    if not sample_leads:
-        return ShopResponse(
-            total_count=0,
-            avg_lead_price=0.0,
-            preview=[],
-            query=SearchQuery(industry=industry, state=state_upper, city=city, lead_type=lead_type, zip_code=zip_code, radius_miles=radius_miles),
+    def _make_query():
+        return SearchQuery(
+            industry=industry, state=state_upper, city=city,
+            lead_type=lead_type, zip_code=zip_code, radius_miles=radius_miles,
+            has_yelp=has_yelp, yelp_min=yelp_min, yelp_max=yelp_max,
+            added_days=added_days, min_quality=min_quality,
         )
+
+    if not sample_leads:
+        return ShopResponse(total_count=0, avg_lead_price=0.0, preview=[], query=_make_query())
 
     prices = [calculate_lead_price(l) for l in sample_leads]
     avg_lead_price = sum(prices) / len(prices)
@@ -117,14 +139,7 @@ async def shop_search(
         total_count=total_count,
         avg_lead_price=round(avg_lead_price, 4),
         preview=preview,
-        query=SearchQuery(
-            industry=industry,
-            state=state_upper,
-            city=city,
-            lead_type=lead_type,
-            zip_code=zip_code,
-            radius_miles=radius_miles,
-        ),
+        query=_make_query(),
     )
 
 

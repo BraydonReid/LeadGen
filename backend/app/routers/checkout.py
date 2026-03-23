@@ -152,6 +152,10 @@ async def checkout(
         fulfilled=False,
         zip_code=body.zip_code,
         radius_miles=int(body.radius_miles) if body.radius_miles else None,
+        utm_source=body.utm_source,
+        utm_medium=body.utm_medium,
+        utm_campaign=body.utm_campaign,
+        referrer=body.referrer,
     )
     db.add(purchase)
     await db.commit()

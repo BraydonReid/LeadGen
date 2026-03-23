@@ -17,22 +17,6 @@ services:
       timeout: 5s
       retries: 10
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_models:/root/.ollama
-    restart: unless-stopped
-    # To enable GPU on Windows with NVIDIA, uncomment:
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
-
   backend:
     build: ./backend
     depends_on:
@@ -45,9 +29,7 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
       CORS_ORIGINS: '["http://localhost:3000"]'
-      OLLAMA_BASE_URL: http://ollama:11434
-      OLLAMA_SCORING_MODEL: llama3.1:8b
-      OLLAMA_SEARCH_MODEL: llama3.1:8b
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
       HUNTER_API_KEY: ${HUNTER_API_KEY:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-leads@yourdomain.com}
@@ -146,7 +128,6 @@ services:
 
 volumes:
   pgdata:
-  ollama_models:
   scraper_east_history:
   scraper_west_history:
   scraper_north_history:

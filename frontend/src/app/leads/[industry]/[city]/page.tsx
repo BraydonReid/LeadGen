@@ -51,7 +51,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const data = await getPageData(params.industry, params.city);
   const industryTitle = params.industry.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const cityParts = params.city.rsplit ? params.city.split("-") : params.city.split("-");
+  const cityParts = params.city.split("-");
   const state = cityParts.pop()?.toUpperCase() ?? "TX";
   const cityName = cityParts.join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
 

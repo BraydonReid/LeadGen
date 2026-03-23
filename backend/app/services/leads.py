@@ -28,6 +28,7 @@ async def search_leads(
         func.lower(Lead.industry).contains(industry_lower),
         Lead.state == state_upper,
         Lead.scraped_date >= freshness_cutoff,
+        Lead.duplicate_of_id.is_(None),
     ]
     if city:
         filters.append(func.lower(Lead.city).contains(city.strip().lower()))
@@ -84,6 +85,7 @@ async def get_leads_for_download(
         func.lower(Lead.industry).contains(industry.strip().lower()),
         Lead.times_sold < 5,
         Lead.scraped_date >= freshness_cutoff,
+        Lead.duplicate_of_id.is_(None),
     ]
     if resolved_state:
         filters.append(Lead.state == resolved_state.strip().upper())

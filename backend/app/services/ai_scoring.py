@@ -11,9 +11,8 @@ import logging
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import settings
 from app.models import Lead
-from app.services.ollama_client import generate
+from app.services.openai_client import generate
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +89,7 @@ async def score_lead_batch(db: AsyncSession, batch_size: int = 50) -> int:
     for lead in leads:
         try:
             prompt = _build_prompt(lead)
-            response = await generate(settings.ollama_scoring_model, prompt, temperature=0.1)
+            response = await generate(prompt, temperature=0.1)
             data = _parse_response(response)
 
             await db.execute(

@@ -35,10 +35,15 @@ class Lead(Base):
     yelp_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
     review_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     years_in_business: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
-    # Email enrichment — Hunter.io discovered emails
-    email_source: Mapped[str | None] = mapped_column(String(20), nullable=True)   # 'scraper' | 'hunter'
+    # Email enrichment — Hunter.io or website scraping
+    email_source: Mapped[str | None] = mapped_column(String(20), nullable=True)   # 'scraper' | 'hunter' | 'website'
     email_found_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     enrichment_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    website_scrape_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Data quality — phone validation, deduplication, website health
+    phone_valid: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    duplicate_of_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    website_status: Mapped[str | None] = mapped_column(String(10), nullable=True)  # 'ok'|'dead'|'unknown'
 
 
 class Purchase(Base):
@@ -58,6 +63,11 @@ class Purchase(Base):
     zip_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
     radius_miles: Mapped[float | None] = mapped_column(Integer, nullable=True)
     buyer_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Ad attribution — UTM params captured at checkout
+    utm_source: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    utm_medium: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    utm_campaign: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    referrer: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 class LeadCredit(Base):
@@ -146,3 +156,74 @@ class EmailUnsubscribe(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     unsubscribed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    stripe_subscription_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    stripe_customer_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    buyer_email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="active")
+    plan: Mapped[str] = mapped_column(String(20), nullable=False, server_default="pro")
+    leads_per_month: Mapped[int] = mapped_column(Integer, nullable=False, server_default="300")
+    credits_remaining: Mapped[int] = mapped_column(Integer, nullable=False, server_default="300")
+    current_period_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    current_period_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    canceled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # Rollover — unused credits carry to next month (capped at 2× monthly)
+    rollover_credits: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    # Referral program
+    referral_code: Mapped[str | None] = mapped_column(String(10), unique=True, nullable=True, index=True)
+    referred_by_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
+
+class SubscriptionMagicLink(Base):
+    """One-time sign-in tokens emailed to subscribers."""
+    __tablename__ = "subscription_magic_links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class SubscriptionSession(Base):
+    """Active authenticated sessions for the subscriber portal."""
+    __tablename__ = "subscription_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class SubscriberEmailSent(Base):
+    """Tracks which lifecycle emails have been sent to each subscriber."""
+    __tablename__ = "subscriber_emails_sent"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    email_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    sent_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("email", "email_type", name="uq_subscriber_email_type"),
+    )
+
+
+class SubscriptionDownload(Base):
+    __tablename__ = "subscription_downloads"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    subscription_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    industry: Mapped[str] = mapped_column(String(100), nullable=False)
+    state: Mapped[str] = mapped_column(String(2), nullable=False)
+    city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    downloaded_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
