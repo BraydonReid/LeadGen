@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Pricing — LeadGen | Pay Per Lead or Subscribe Monthly",
+  title: "Pricing — Take Your Lead Today | Pay Per Lead or Subscribe Monthly",
   description:
     "Pay per download with no subscription, or go Pro for unlimited monthly leads. Starting at $0.10/lead. No contracts, cancel anytime.",
 };

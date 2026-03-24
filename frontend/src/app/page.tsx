@@ -31,12 +31,12 @@ export default async function HomePage() {
             </h2>
             <p className="text-blue-100 text-lg mb-3 max-w-2xl mx-auto leading-relaxed">
               Traditional lead services charge thousands per month and lock you into long contracts.
-              We built LeadGen so any Texas contractor can access quality local leads — without the overhead.
+              We built Take Your Lead Today so any Texas contractor can access quality local leads — without the overhead.
             </p>
             <p className="text-blue-200 text-base mb-10 max-w-xl mx-auto">
               No phone calls to sales reps. Pick your city and industry,
               choose how many leads you need, and download your CSV in minutes.
-              Every lead scraped within the last 30 days. 98% have a verified phone number.
+              98% have a verified phone number.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link

@@ -1,10 +1,5 @@
 const rows = [
   {
-    feature: "Data freshness",
-    us: { text: "Scraped within the last 30 days", positive: true },
-    them: { text: "Often 12–24 months old", positive: false },
-  },
-  {
     feature: "Phone number coverage",
     us: { text: "98% of leads have a phone number", positive: true },
     them: { text: "Typically 60–75% coverage", positive: false },
@@ -30,11 +25,6 @@ const rows = [
     them: { text: "Hidden — you find out after", positive: false },
   },
   {
-    feature: "Freshness guarantee",
-    us: { text: "180-day cutoff enforced", positive: true },
-    them: { text: "Stale data common", positive: false },
-  },
-  {
     feature: "Bad lead protection",
     us: { text: "Automatic store credit issued", positive: true },
     them: { text: "No recourse offered", positive: false },
@@ -57,7 +47,7 @@ export default function ComparisonTable() {
       <div className="max-w-5xl mx-auto px-6">
         <div className="text-center mb-12">
           <span className="inline-block bg-blue-50 text-blue-600 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-4">
-            Why LeadGen
+            Why Take Your Lead Today
           </span>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-4">
             Built differently from every lead vendor you've tried
@@ -71,7 +61,7 @@ export default function ComparisonTable() {
           {/* Header */}
           <div className="grid grid-cols-3 bg-slate-900 text-white text-sm font-semibold">
             <div className="px-6 py-4 text-slate-400">Feature</div>
-            <div className="px-6 py-4 text-blue-300 border-l border-slate-700">LeadGen</div>
+            <div className="px-6 py-4 text-blue-300 border-l border-slate-700">Take Your Lead Today</div>
             <div className="px-6 py-4 text-slate-400 border-l border-slate-700">Typical Competitors</div>
           </div>
 

@@ -51,7 +51,7 @@ export default function Features() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
           <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-            Why Small Businesses Choose LeadGen
+            Why Small Businesses Choose Take Your Lead Today
           </h2>
           <p className="text-slate-500 text-lg max-w-2xl mx-auto">
             We built this for the small business owner who needs real customers — without the
