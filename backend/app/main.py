@@ -107,7 +107,8 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(_run_scoring_job, "interval", minutes=10, id="ai_scoring")
     scheduler.add_job(_run_enrichment_job, "interval", hours=1, id="email_enrichment")
     scheduler.add_job(_run_website_scrape_job, "interval", minutes=20, id="website_scraper")
-    scheduler.add_job(_run_email_send_job, "interval", minutes=15, id="email_campaigns")
+    # Email campaigns disabled — enable when ready to launch outbound emails
+    # scheduler.add_job(_run_email_send_job, "interval", minutes=15, id="email_campaigns")
     scheduler.add_job(_run_phone_clean_job, "interval", minutes=30, id="phone_cleaner")
     scheduler.add_job(_run_dedup_job, "interval", hours=24, id="deduplication")
     scheduler.add_job(_run_subscriber_email_job, "interval", hours=1, id="subscriber_emails")
