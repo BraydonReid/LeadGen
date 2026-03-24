@@ -1,0 +1,106 @@
+version: "3.9"
+
+# Production deployment — Take Your Lead Today
+#
+# Required .env vars on the server:
+#   POSTGRES_PASSWORD, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+#   STRIPE_PUBLISHABLE_KEY, OPENAI_API_KEY, SMTP_USER, SMTP_PASSWORD,
+#   FRONTEND_URL, SITE_URL, CORS_ORIGINS
+#
+# Optional:
+#   YELP_API_KEY, FOURSQUARE_API_KEY, HUNTER_API_KEY
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: leadgen
+      POSTGRES_USER: leadgen
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leadgen"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      DATABASE_URL_SYNC: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["https://takeyourleadtoday.com"]}
+      FRONTEND_URL: ${FRONTEND_URL:-https://takeyourleadtoday.com}
+      SITE_URL: ${SITE_URL:-https://takeyourleadtoday.com}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      HUNTER_API_KEY: ${HUNTER_API_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-smtpout.secureserver.net}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Take Your Lead Today}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-hello@takeyourleadtoday.com}
+    ports:
+      - "8000:8000"
+    volumes:
+      - scraper_east_history:/app/history
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.takeyourleadtoday.com}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+  scraper-east:
+    build: ./scraper
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: east
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - scraper_east_history:/app/history
+    command: python main.py --schedule
+
+  scraper-west:
+    build: ./scraper
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: west
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - scraper_west_history:/app/history
+    command: python main.py --schedule
+
+volumes:
+  pgdata:
+  scraper_east_history:
+  scraper_west_history:
