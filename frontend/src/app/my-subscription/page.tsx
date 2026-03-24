@@ -117,10 +117,23 @@ function MagicLinkGate({ onSession }: { onSession: (s: string, e: string) => voi
             {loading ? "Sending…" : "Send Sign-In Link →"}
           </button>
         </form>
-        <p className="text-center text-xs text-slate-400 mt-4">
-          Not subscribed?{" "}
-          <a href="/subscribe" className="text-blue-600 hover:underline">Subscribe for $99/month</a>
-        </p>
+        <div className="mt-6 pt-4 border-t border-slate-100">
+          <p className="text-center text-xs text-slate-500 font-semibold mb-3">Not subscribed? Choose a plan:</p>
+          <div className="grid grid-cols-2 gap-3">
+            <a href="/subscribe?plan=starter"
+              className="block text-center border border-slate-200 rounded-xl px-4 py-3 hover:border-blue-300 hover:bg-blue-50 transition-all">
+              <div className="font-bold text-slate-800 text-sm">Starter</div>
+              <div className="text-blue-600 font-black text-lg">$29.99<span className="text-slate-400 text-xs font-normal">/mo</span></div>
+              <div className="text-slate-400 text-xs">50 leads/month</div>
+            </a>
+            <a href="/subscribe?plan=pro"
+              className="block text-center border-2 border-blue-500 rounded-xl px-4 py-3 bg-blue-50 hover:bg-blue-100 transition-all">
+              <div className="font-bold text-slate-800 text-sm">Pro</div>
+              <div className="text-blue-600 font-black text-lg">$99.99<span className="text-slate-400 text-xs font-normal">/mo</span></div>
+              <div className="text-slate-400 text-xs">300 leads/month</div>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -296,7 +309,7 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
           </div>
           <span className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-sm font-bold px-3 py-1.5 rounded-full">
             <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-            Active — Pro Plan
+            Active — {(sub.plan as string) === "starter" ? "Starter" : "Pro"} Plan
           </span>
         </div>
 
@@ -459,6 +472,20 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Upgrade prompt for Starter */}
+        {(sub.plan as string) === "starter" && (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <div className="font-bold text-slate-900 text-sm">Upgrade to Pro</div>
+              <div className="text-slate-500 text-xs mt-0.5">Get 300 leads/month instead of 50 — $99.99/mo</div>
+            </div>
+            <a href="/subscribe?plan=pro"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap">
+              Upgrade →
+            </a>
           </div>
         )}
 
