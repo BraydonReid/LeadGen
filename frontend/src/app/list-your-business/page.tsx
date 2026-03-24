@@ -73,7 +73,7 @@ export default function ListYourBusinessPage() {
           <h2 className="text-2xl font-black text-slate-900 mb-2">You&apos;re Listed!</h2>
           <p className="text-slate-500 text-sm mb-6">
             <strong>{form.business_name}</strong> has been added to our lead database.
-            Contractors searching for {form.industry.toLowerCase()} businesses in {form.city}, {form.state}
+            Contractors searching for {form.industry.toLowerCase()} businesses in {form.city}, {form.state}{" "}
             can now find and contact you.
           </p>
           <div className="space-y-3">
