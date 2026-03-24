@@ -33,18 +33,14 @@ async def free_sample(body: SampleRequestSchema, db: AsyncSession = Depends(get_
     # Rate limit: one sample per email+industry+state
     existing = (
         await db.execute(
-            select(SampleRequest).where(
-                func.lower(SampleRequest.email) == email,
-                func.lower(SampleRequest.industry) == industry_lower,
-                SampleRequest.state == state,
-            )
+            select(SampleRequest).where(func.lower(SampleRequest.email) == email)
         )
     ).scalar_one_or_none()
 
     if existing:
         raise HTTPException(
             status_code=409,
-            detail="You've already received a free sample for this search. Ready to buy the full list?",
+            detail="You've already received a free sample. Ready to buy the full list?",
         )
 
     # Resolve ZIP radius → cities
