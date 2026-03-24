@@ -149,6 +149,11 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
   const [applyingRef, setApplyingRef] = useState(false);
   const [refMsg, setRefMsg] = useState<string | null>(null);
 
+  // Cancel
+  const [canceling, setCanceling] = useState(false);
+  const [cancelMsg, setCancelMsg] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -228,6 +233,27 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
       setRefMsg(err instanceof Error ? err.message : "Failed.");
     } finally {
       setApplyingRef(false);
+    }
+  }
+
+  async function handleCancel() {
+    setCanceling(true);
+    setCancelMsg(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/subscription/cancel`, {
+        method: "POST",
+        headers: authHeaders(session),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error((data as { detail?: string }).detail ?? "Cancellation failed.");
+      const until = (data as { access_until?: string }).access_until;
+      setCancelMsg(`Subscription canceled. You have access until ${until ? fmtDate(until) : "your next billing date"}.`);
+      setShowCancelConfirm(false);
+      await load();
+    } catch (err) {
+      setCancelMsg(err instanceof Error ? err.message : "Failed to cancel.");
+    } finally {
+      setCanceling(false);
     }
   }
 
@@ -436,14 +462,52 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
           </div>
         )}
 
-        <div className="flex items-center justify-between text-sm text-slate-400 flex-wrap gap-2 pb-4">
-          <button onClick={onSignOut} className="hover:text-slate-600 underline">Sign out</button>
-          <span>
-            To cancel, email{" "}
-            <a href="mailto:support@texasleadgen.com" className="text-blue-600 hover:underline">
-              support@texasleadgen.com
-            </a>
-          </span>
+        {/* Cancel / sign out */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <button onClick={onSignOut} className="text-slate-500 hover:text-slate-700 text-sm underline">
+              Sign out
+            </button>
+            {sub.status !== "canceled" && sub.status !== "canceling" && (
+              <div>
+                {!showCancelConfirm ? (
+                  <button
+                    onClick={() => setShowCancelConfirm(true)}
+                    className="text-red-500 hover:text-red-700 text-sm underline"
+                  >
+                    Cancel subscription
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-slate-600">Cancel at end of billing period?</span>
+                    <button
+                      onClick={handleCancel}
+                      disabled={canceling}
+                      className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all"
+                    >
+                      {canceling ? "Canceling…" : "Yes, Cancel"}
+                    </button>
+                    <button
+                      onClick={() => setShowCancelConfirm(false)}
+                      className="text-slate-500 hover:text-slate-700 text-xs underline"
+                    >
+                      Keep subscription
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {cancelMsg && (
+            <p className={`text-sm mt-3 ${cancelMsg.includes("canceled") ? "text-amber-600" : "text-red-600"}`}>
+              {cancelMsg}
+            </p>
+          )}
+          {sub.status === "canceling" && (
+            <p className="text-amber-600 text-sm mt-3">
+              Your subscription is set to cancel on {fmtDate(sub.current_period_end as string)}. You retain full access until then.
+            </p>
+          )}
         </div>
       </div>
     </div>

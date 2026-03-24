@@ -521,6 +521,119 @@ async def handle_invoice_paid(invoice: dict, db: AsyncSession):
     logger.info(f"[subscription] Credits reset for {sub.buyer_email} — rolled over {rollover} credits")
 
 
+# ── Cancel ────────────────────────────────────────────────────────────────────
+
+@router.post("/subscription/cancel")
+async def cancel_subscription(
+    email: str = Depends(require_session),
+    db: AsyncSession = Depends(get_db),
+):
+    """Cancel at period end — subscriber keeps access until billing date."""
+    sub = await _get_active_sub(email, db)
+    if not sub:
+        raise HTTPException(status_code=404, detail="No active subscription found.")
+    try:
+        stripe.Subscription.modify(sub.stripe_subscription_id, cancel_at_period_end=True)
+        sub.status = "canceling"
+        await db.commit()
+        access_until = sub.current_period_end.isoformat() if sub.current_period_end else None
+        logger.info(f"[subscription] {email} set to cancel at period end")
+        return {"canceled": True, "access_until": access_until}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cancellation failed: {e}")
+
+
+# ── List Business ─────────────────────────────────────────────────────────────
+
+class BusinessListingRequest(BaseModel):
+    business_name: str
+    industry: str
+    city: str
+    state: str
+    phone: str | None = None
+    email: str | None = None
+    website: str | None = None
+    contact_name: str | None = None
+    full_address: str | None = None
+
+
+@router.post("/list-business")
+async def list_business(body: BusinessListingRequest, db: AsyncSession = Depends(get_db)):
+    """Self-submit a business to be listed in the lead database."""
+    from app.models import Lead
+    from sqlalchemy import select as sa_select
+
+    source_url = f"self:{body.business_name.strip().lower()}:{body.city.strip().lower()}:{body.state.strip().lower()}"
+    existing = await db.execute(sa_select(Lead).where(Lead.source_url == source_url))
+    if existing.scalar_one_or_none():
+        return {"success": True, "already_listed": True}
+
+    lead = Lead(
+        business_name=body.business_name.strip(),
+        industry=body.industry.strip(),
+        city=body.city.strip(),
+        state=body.state.strip().upper()[:2],
+        phone=body.phone.strip() if body.phone else None,
+        email=body.email.strip().lower() if body.email else None,
+        website=body.website.strip() if body.website else None,
+        contact_name=body.contact_name.strip() if body.contact_name else None,
+        full_address=body.full_address.strip() if body.full_address else None,
+        source_url=source_url,
+        source="self_submitted",
+        lead_type="business",
+    )
+    db.add(lead)
+    await db.commit()
+    logger.info(f"[listing] New self-submitted business: {body.business_name} ({body.industry}, {body.city}, {body.state})")
+    return {"success": True, "already_listed": False}
+
+
+async def handle_invoice_failed(invoice: dict, db: AsyncSession):
+    stripe_sub_id = invoice.get("subscription")
+    if not stripe_sub_id:
+        return
+
+    result = await db.execute(
+        select(Subscription).where(Subscription.stripe_subscription_id == stripe_sub_id)
+    )
+    sub = result.scalar_one_or_none()
+    if not sub:
+        return
+
+    logger.warning(f"[subscription] Payment failed for {sub.buyer_email}")
+
+    if settings.resend_api_key:
+        from app.services.email_sender import send_email
+        next_attempt = invoice.get("next_payment_attempt")
+        retry_str = ""
+        if next_attempt:
+            retry_date = datetime.fromtimestamp(next_attempt, tz=timezone.utc).strftime("%B %d")
+            retry_str = f"Stripe will automatically retry on <strong>{retry_date}</strong>."
+        html = f"""
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#1e293b;">
+  <div style="background:#dc2626;padding:20px 28px;border-radius:12px 12px 0 0;">
+    <span style="color:white;font-weight:900;font-size:20px;">Payment Failed</span>
+  </div>
+  <div style="background:#f8fafc;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;">
+    <h2 style="margin-top:0;color:#1e293b;">We couldn&apos;t charge your card</h2>
+    <p>Your LeadGen Pro subscription payment for <strong>{sub.buyer_email}</strong> failed.</p>
+    <p>{retry_str}</p>
+    <p>To avoid losing access, please update your payment method in Stripe:</p>
+    <p style="margin:24px 0;">
+      <a href="https://billing.stripe.com/p/login/test_00g00000000000"
+         style="background:#2563eb;color:white;padding:14px 28px;text-decoration:none;
+                border-radius:8px;font-weight:bold;font-size:15px;display:inline-block;">
+        Update Payment Method →
+      </a>
+    </p>
+    <p style="font-size:12px;color:#94a3b8;">
+      Questions? Reply to this email or contact support@takeyourleadtoday.com
+    </p>
+  </div>
+</div>"""
+        await send_email(sub.buyer_email, "Action required: Payment failed", html)
+
+
 async def handle_subscription_canceled(stripe_sub: dict, db: AsyncSession):
     stripe_sub_id = stripe_sub.get("id")
     if not stripe_sub_id:

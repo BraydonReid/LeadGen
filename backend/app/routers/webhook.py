@@ -50,6 +50,11 @@ async def stripe_webhook(request: Request):
         async with AsyncSessionLocal() as db:
             await handle_subscription_canceled(obj, db)
 
+    elif event_type == "invoice.payment_failed":
+        from app.routers.subscriptions import handle_invoice_failed
+        async with AsyncSessionLocal() as db:
+            await handle_invoice_failed(obj, db)
+
     return {"status": "ok"}
 
 

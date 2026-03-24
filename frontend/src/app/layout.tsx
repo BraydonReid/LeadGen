@@ -30,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link>
               <Link href="/my-subscription" className="hover:text-blue-600 transition-colors">My Subscription</Link>
               <a href="/#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</a>
+              <Link href="/list-your-business" className="hover:text-blue-600 transition-colors">List Your Business</Link>
               <Link href="/request-service" className="hover:text-teal-600 transition-colors">Get Free Quotes</Link>
             </nav>
 
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <li><Link href="/subscribe" className="hover:text-white transition-colors">Subscribe — $99/month</Link></li>
                 <li><Link href="/my-subscription" className="hover:text-white transition-colors">My Subscription</Link></li>
                 <li><a href="/#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
+                <li><Link href="/list-your-business" className="hover:text-white transition-colors">List Your Business</Link></li>
                 <li><Link href="/request-service" className="hover:text-white transition-colors">Request a Service</Link></li>
               </ul>
             </div>
