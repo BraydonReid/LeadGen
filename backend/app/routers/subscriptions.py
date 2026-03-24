@@ -31,6 +31,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.models import (
+    Lead,
     Subscription,
     SubscriptionDownload,
     SubscriptionMagicLink,
@@ -255,6 +256,15 @@ async def subscription_download(
         raise HTTPException(status_code=404, detail="No leads found matching that search.")
 
     actual = len(leads)
+
+    # Mark leads as sold (skip for owner test account)
+    OWNER_EMAILS = {"braydonreid01@gmail.com"}
+    if email not in OWNER_EMAILS:
+        from sqlalchemy import update as _update
+        lead_ids = [l.id for l in leads]
+        await db.execute(
+            _update(Lead).where(Lead.id.in_(lead_ids)).values(times_sold=Lead.times_sold + 1)
+        )
 
     # Spend rollover first, then regular credits
     if sub.rollover_credits >= actual:

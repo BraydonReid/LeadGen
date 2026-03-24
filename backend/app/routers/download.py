@@ -36,8 +36,9 @@ async def download(
         radius_miles=float(purchase.radius_miles) if purchase.radius_miles else None,
     )
 
-    # Increment times_sold for each delivered lead
-    if leads:
+    # Increment times_sold for each delivered lead (skip for owner test account)
+    OWNER_EMAILS = {"braydonreid01@gmail.com"}
+    if leads and purchase.buyer_email not in OWNER_EMAILS:
         lead_ids = [l.id for l in leads]
         await db.execute(
             update(Lead)
