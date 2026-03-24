@@ -17,8 +17,25 @@ const PAY_AS_YOU_GO = [
 
 const SUBSCRIPTION_PLANS = [
   {
+    name: "Starter",
+    price: "$29.99",
+    period: "/month",
+    leads: "50 leads/month",
+    perLead: "~$0.60/lead",
+    features: [
+      "50 fresh leads every month",
+      "Any industry + any state",
+      "Instant CSV download, any time",
+      "Cancel anytime",
+    ],
+    cta: "Get Started",
+    ctaHref: "/subscribe?plan=starter",
+    color: "border-slate-200",
+    badge: null,
+  },
+  {
     name: "Pro",
-    price: "$99",
+    price: "$99.99",
     period: "/month",
     leads: "300 leads/month",
     perLead: "~$0.33/lead",
@@ -31,7 +48,7 @@ const SUBSCRIPTION_PLANS = [
       "Cancel anytime",
     ],
     cta: "Subscribe Now",
-    ctaHref: "/subscribe",
+    ctaHref: "/subscribe?plan=pro",
     color: "border-blue-500",
     badge: "Most Popular",
   },
@@ -104,7 +121,7 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="grid gap-6 max-w-sm mx-auto mb-10">
+          <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto mb-10">
             {SUBSCRIPTION_PLANS.map((plan) => (
               <div
                 key={plan.name}
@@ -213,7 +230,7 @@ export default function PricingPage() {
               href="/subscribe"
               className="border border-blue-300 text-white hover:bg-blue-700 font-semibold px-8 py-4 rounded-xl text-lg transition-all"
             >
-              Subscribe for $99/month
+              View Subscription Plans
             </Link>
           </div>
         </div>

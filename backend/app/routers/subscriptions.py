@@ -45,10 +45,20 @@ router = APIRouter()
 stripe.api_key = settings.stripe_secret_key
 FRONTEND_URL = settings.frontend_url
 
-PLAN_PRICE_CENTS = 9900
-PLAN_LEADS = 300
-PLAN_NAME = "Take Your Lead Today — 300 leads/month"
-PLAN_DESCRIPTION = "300 fresh leads every month. Any industry, any state. Cancel anytime."
+PLANS = {
+    "starter": {
+        "price_cents": 2999,
+        "leads": 50,
+        "name": "Lead Credits — Starter",
+        "description": "50 fresh leads every month. Any industry, any state. Cancel anytime.",
+    },
+    "pro": {
+        "price_cents": 9999,
+        "leads": 300,
+        "name": "Lead Credits — Pro",
+        "description": "300 fresh leads every month. Any industry, any state. Cancel anytime.",
+    },
+}
 
 MAGIC_LINK_TTL_MINUTES = 20
 SESSION_TTL_DAYS = 7
@@ -160,12 +170,16 @@ async def verify_magic_link(token: str = Query(...), db: AsyncSession = Depends(
 
 class SubscribeRequest(BaseModel):
     email: str
+    plan: str = "pro"
     referral_code: str | None = None
 
 
 @router.post("/subscribe")
 async def create_subscription_checkout(body: SubscribeRequest):
     """Create a Stripe subscription checkout session."""
+    plan_key = body.plan if body.plan in PLANS else "pro"
+    plan = PLANS[plan_key]
+
     session = stripe.checkout.Session.create(
         mode="subscription",
         payment_method_types=["card"],
@@ -174,19 +188,19 @@ async def create_subscription_checkout(body: SubscribeRequest):
             {
                 "price_data": {
                     "currency": "usd",
-                    "unit_amount": PLAN_PRICE_CENTS,
+                    "unit_amount": plan["price_cents"],
                     "recurring": {"interval": "month"},
                     "product_data": {
-                        "name": PLAN_NAME,
-                        "description": PLAN_DESCRIPTION,
+                        "name": plan["name"],
+                        "description": plan["description"],
                     },
                 },
                 "quantity": 1,
             }
         ],
         metadata={
-            "plan": "pro",
-            "leads_per_month": str(PLAN_LEADS),
+            "plan": plan_key,
+            "leads_per_month": str(plan["leads"]),
             "referral_code": body.referral_code or "",
         },
         success_url=f"{FRONTEND_URL}/my-subscription?subscribed=1",
@@ -438,7 +452,10 @@ async def handle_subscription_created(session: dict, db: AsyncSession):
     stripe_sub_id = session.get("subscription")
     customer_id = session.get("customer")
     email = (session.get("customer_details") or {}).get("email", "")
-    referred_by = (session.get("metadata") or {}).get("referral_code", "") or None
+    meta = session.get("metadata") or {}
+    referred_by = meta.get("referral_code", "") or None
+    plan_key = meta.get("plan", "pro") if meta.get("plan") in PLANS else "pro"
+    plan = PLANS[plan_key]
 
     if not stripe_sub_id or not email:
         return
@@ -457,9 +474,9 @@ async def handle_subscription_created(session: dict, db: AsyncSession):
         stripe_customer_id=customer_id or "",
         buyer_email=email.lower().strip(),
         status="active",
-        plan="pro",
-        leads_per_month=PLAN_LEADS,
-        credits_remaining=PLAN_LEADS,
+        plan=plan_key,
+        leads_per_month=plan["leads"],
+        credits_remaining=plan["leads"],
         rollover_credits=0,
         current_period_start=period_start,
         current_period_end=period_end,
@@ -475,7 +492,7 @@ async def handle_subscription_created(session: dict, db: AsyncSession):
         )
         referrer = referrer_result.scalar_one_or_none()
         if referrer:
-            sub.credits_remaining = min(PLAN_LEADS + REFERRAL_BONUS_CREDITS, PLAN_LEADS * 2)
+            sub.credits_remaining = min(plan["leads"] + REFERRAL_BONUS_CREDITS, plan["leads"] * 2)
             referrer.credits_remaining = min(
                 referrer.credits_remaining + REFERRAL_BONUS_CREDITS,
                 referrer.leads_per_month * 2,

@@ -143,11 +143,11 @@ export async function getOrders(email: string): Promise<OrdersResponse> {
   return res.json();
 }
 
-export async function createSubscriptionCheckout(email: string, referralCode?: string): Promise<{ checkout_url: string }> {
+export async function createSubscriptionCheckout(email: string, referralCode?: string, plan?: string): Promise<{ checkout_url: string }> {
   const res = await fetch(`${API_BASE}/api/subscribe`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, referral_code: referralCode ?? null }),
+    body: JSON.stringify({ email, plan: plan ?? "pro", referral_code: referralCode ?? null }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
