@@ -97,11 +97,17 @@ def _send_sync(to_email: str, subject: str, html_body: str, reply_to: str | None
 
     msg.attach(MIMEText(html_body, "html"))
 
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(settings.smtp_user, settings.smtp_password)
-        server.sendmail(from_addr, to_email, msg.as_string())
+    # Port 465 = SSL/TLS (GoDaddy default), port 587 = STARTTLS
+    if settings.smtp_port == 465:
+        with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port) as server:
+            server.login(settings.smtp_user, settings.smtp_password)
+            server.sendmail(from_addr, to_email, msg.as_string())
+    else:
+        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(settings.smtp_user, settings.smtp_password)
+            server.sendmail(from_addr, to_email, msg.as_string())
 
 
 async def send_email(
