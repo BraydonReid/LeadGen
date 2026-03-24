@@ -281,7 +281,7 @@ class ArcGISPermitScraper(BaseScraper):
                     dedup_key = f"permit:{state}:{re.sub(r'[^a-z0-9]', '', full_address.lower()[:60])}"
 
                     leads.append(ScrapedLead(
-                        business_name=contact_name,
+                        business_name=address,  # property address — more useful for contractors than homeowner name
                         industry=mapped,
                         city=city_name,
                         state=state,

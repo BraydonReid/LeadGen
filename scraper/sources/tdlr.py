@@ -20,6 +20,7 @@ from datetime import datetime
 import httpx
 
 from sources.base import BaseScraper, ScrapedLead
+from utils import smart_title
 
 TDLR_URL = "https://data.texas.gov/resource/7358-krk7.json"
 
@@ -195,15 +196,15 @@ class TDLRScraper(BaseScraper):
         )
 
         return ScrapedLead(
-            business_name=business_name.title(),
+            business_name=smart_title(business_name),
             industry=industry,
-            city=city.title(),
+            city=smart_title(city),
             state="TX",
             website=None,
             phone=phone,
             zip_code=zip_code or None,
             full_address=full_address,
-            contact_name=owner_name.title() if owner_name else None,
+            contact_name=smart_title(owner_name) if owner_name else None,
             source_url=dedup_key,
             source="tdlr",
             lead_type="business",

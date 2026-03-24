@@ -15,6 +15,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from sources.base import BaseScraper, ScrapedLead
+from utils import looks_like_address
 
 MANTA_BASE = "https://www.manta.com"
 
@@ -208,6 +209,21 @@ def _parse_card(card, industry: str, search_city: str, state: str) -> ScrapedLea
         if href.startswith("http") and MANTA_BASE not in href:
             website = href
 
+    # Contact name — Manta cards sometimes show owner/principal info
+    contact_name = None
+    for el in card.select("p, span, div, li"):
+        text = el.get_text(" ", strip=True)
+        low = text.lower()
+        if ("owner" in low or "principal" in low or "contact:" in low) and len(text) < 120:
+            name_part = re.sub(r"(?i)(owner|principal|contact)\s*[:\-]?\s*", "", text).strip()
+            if (
+                2 < len(name_part) < 60
+                and not looks_like_address(name_part)
+                and not any(kw in name_part.lower() for kw in ["owner", "principal", "contact", "http"])
+            ):
+                contact_name = name_part
+                break
+
     return ScrapedLead(
         business_name=business_name,
         industry=industry.lower(),
@@ -218,6 +234,7 @@ def _parse_card(card, industry: str, search_city: str, state: str) -> ScrapedLea
         source_url=source_url,
         zip_code=zip_code,
         full_address=full_address,
+        contact_name=contact_name,
         source="manta",
         lead_type="business",
     )

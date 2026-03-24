@@ -32,6 +32,8 @@ from pathlib import Path
 from apscheduler.schedulers.blocking import BlockingScheduler
 from sqlalchemy.exc import IntegrityError
 
+from utils import looks_like_address, smart_title
+
 from database import SessionLocal
 from dedup import already_exists
 from models import Lead
@@ -274,6 +276,40 @@ def normalize_phone(raw: str | None) -> str | None:
     if len(digits) != 10:
         return None
     return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+
+
+def _clean_lead(s: ScrapedLead) -> ScrapedLead:
+    """
+    Sanitize all text fields before saving:
+    - Clear contact_name if it contains a street address or a business entity suffix
+    - Clear business_name if it's a street address on a business-type lead
+    - Normalize whitespace throughout
+    """
+    # --- contact_name ---
+    if s.contact_name:
+        cn = s.contact_name.strip()
+        # Wipe if it looks like a street address
+        if looks_like_address(cn):
+            cn = None
+        # Wipe if it's clearly a company name, not a person
+        elif any(kw in cn.lower() for kw in [" llc", " inc", " corp", " ltd", " lp", " llp", " co.", " co,"]):
+            cn = None
+        # Normalize whitespace
+        s.contact_name = " ".join(cn.split()) if cn else None
+
+    # --- business_name (business-type leads only) ---
+    # Permit leads intentionally store the property address in business_name — skip cleaning those
+    if s.lead_type == "business" and s.business_name:
+        bn = s.business_name.strip()
+        if looks_like_address(bn):
+            bn = ""
+        s.business_name = " ".join(bn.split()) if bn else ""
+
+    # --- normalize whitespace on remaining fields ---
+    if s.business_name:
+        s.business_name = " ".join(s.business_name.split())
+
+    return s
 
 
 def calculate_quality_score(s: ScrapedLead) -> int:
@@ -529,6 +565,9 @@ def run_scrape():
 
             new_count = 0
             for s in scraped:
+                s = _clean_lead(s)
+                if not s.business_name:
+                    continue  # cleaning wiped the name — skip
                 normalized_phone = normalize_phone(s.phone)
                 if already_exists(session, s.source_url, s.business_name, normalized_phone, s.website, s.state):
                     continue

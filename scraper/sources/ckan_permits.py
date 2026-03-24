@@ -321,7 +321,7 @@ class CKANPermitScraper(BaseScraper):
         days_old = (datetime.now() - permit_date).days if permit_date else 999
 
         return ScrapedLead(
-            business_name=contact_name,
+            business_name=address,  # property address — more useful for contractors than homeowner name
             industry=mapped,
             city=city_name,
             state=state,
