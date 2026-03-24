@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import UTMCapture from "@/components/UTMCapture";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Take Your Lead Today — Contractor & Business Leads in Texas",
+  title: "Take Your Lead Today — Contractor & Business Leads",
   description:
-    "Buy verified Texas business leads by industry and city. Roofing, plumbing, HVAC, electrician, solar and more across Houston, Dallas, Austin, San Antonio. Starting at $0.10/lead. Instant CSV download.",
+    "Buy verified business leads by industry and city. Roofing, plumbing, HVAC, electrician, solar and more. Starting at $0.10/lead. Instant CSV download.",
+  openGraph: {
+    title: "Take Your Lead Today",
+    description: "Verified business leads for contractors and sales professionals. Instant CSV download.",
+    url: "https://takeyourleadtoday.com",
+    siteName: "Take Your Lead Today",
+    images: [{ url: "https://takeyourleadtoday.com/logo.png", width: 800, height: 400 }],
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -15,13 +24,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white text-slate-900 min-h-screen flex flex-col">
         <header className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <span className="text-xl font-black text-slate-900 tracking-tight">Take Your Lead Today</span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo.png"
+                alt="Take Your Lead Today"
+                height={44}
+                width={180}
+                className="h-11 w-auto object-contain"
+                priority
+              />
             </Link>
 
             <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
@@ -49,7 +60,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="bg-slate-900 text-slate-400">
           <div className="max-w-6xl mx-auto px-6 py-12 grid sm:grid-cols-3 gap-10">
             <div>
-              <div className="text-white font-black text-lg mb-3">Take Your Lead Today</div>
+              <Image src="/logo.png" alt="Take Your Lead Today" height={40} width={160} className="h-10 w-auto object-contain mb-3 brightness-0 invert" />
+
               <p className="text-sm leading-relaxed">
                 Verified business leads for contractors and sales professionals across
                 every city and industry. No contracts, no commitments.
@@ -86,7 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
           <div className="border-t border-slate-800 px-6 py-4 text-center text-xs text-slate-600">
-            &copy; {new Date().getFullYear()} LeadGen. All rights reserved.
+            &copy; {new Date().getFullYear()} Take Your Lead Today. All rights reserved.
           </div>
         </footer>
       </body>
