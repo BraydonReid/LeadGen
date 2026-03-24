@@ -39,12 +39,12 @@ const PLANS = [
 
 function SubscribeInner() {
   const searchParams = useSearchParams();
+  const referralCode = searchParams.get("ref");
+  const planParam = searchParams.get("plan");
   const [email, setEmail] = useState("");
   const [selectedPlan, setSelectedPlan] = useState(planParam === "starter" ? "starter" : "pro");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const referralCode = searchParams.get("ref");
-  const planParam = searchParams.get("plan");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
