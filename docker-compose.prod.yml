@@ -62,6 +62,7 @@ services:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.takeyourleadtoday.com}
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL:-https://takeyourleadtoday.com}
     restart: unless-stopped
     depends_on:
       - backend
