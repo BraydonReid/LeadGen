@@ -30,11 +30,11 @@ scheduler = AsyncIOScheduler()
 
 async def _run_scoring_job():
     """APScheduler job: score a batch of unscored leads every 10 minutes."""
-    from app.services.ollama_client import is_available
+    from app.services.openai_client import is_available
     from app.services.ai_scoring import score_lead_batch
 
     if not await is_available():
-        logger.debug("[scheduler] Ollama not available, skipping scoring run")
+        logger.debug("[scheduler] OpenAI not configured, skipping scoring run")
         return
 
     async with AsyncSessionLocal() as db:

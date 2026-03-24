@@ -105,8 +105,8 @@ async def create_campaign(payload: CampaignCreate, db: AsyncSession = Depends(ge
         city_filter=payload.city_filter,
         template_subject=payload.template_subject or DEFAULT_SUBJECT,
         template_body_html=payload.template_body_html or DEFAULT_BODY_HTML,
-        from_name=settings.resend_from_name,
-        from_email=settings.resend_from_email,
+        from_name=settings.email_from_name,
+        from_email=settings.email_from_address or settings.smtp_user,
     )
     db.add(campaign)
     await db.commit()

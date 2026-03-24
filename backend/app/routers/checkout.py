@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta, timezone
 
 import stripe
@@ -17,7 +16,7 @@ stripe.api_key = settings.stripe_secret_key
 
 router = APIRouter()
 
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = settings.frontend_url
 
 
 @router.post("/checkout", response_model=CheckoutResponse)

@@ -19,8 +19,9 @@ class Settings(BaseSettings):
     smtp_password: str = ""    # Gmail App Password (16 chars)
     email_from_name: str = "Take Your Lead Today"
     email_from_address: str = ""  # defaults to smtp_user if blank
-    # Public site URL — used in email links
+    # Public site URL — used in email links and Stripe redirects
     site_url: str = "http://localhost:3000"
+    frontend_url: str = "http://localhost:3000"
     # Owner/test emails — downloads from these never increment times_sold
     owner_emails: list[str] = ["braydonreid01@gmail.com"]
 

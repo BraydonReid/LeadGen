@@ -16,7 +16,6 @@ Referral:
   POST /api/subscription/referral/apply — apply a referral code to your subscription
 """
 import logging
-import os
 import secrets
 import string
 from datetime import datetime, timedelta, timezone
@@ -44,11 +43,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 stripe.api_key = settings.stripe_secret_key
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = settings.frontend_url
 
 PLAN_PRICE_CENTS = 9900
 PLAN_LEADS = 300
-PLAN_NAME = "LeadGen Pro — 300 leads/month"
+PLAN_NAME = "Take Your Lead Today — 300 leads/month"
 PLAN_DESCRIPTION = "300 fresh leads every month. Any industry, any state. Cancel anytime."
 
 MAGIC_LINK_TTL_MINUTES = 20
