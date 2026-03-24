@@ -28,18 +28,18 @@ CAN_SPAM_FOOTER = """
 </div>
 """
 
-DEFAULT_SUBJECT = "I have {lead_count} {industry} leads in {city} — want 10 free?"
+DEFAULT_SUBJECT = "I have {lead_count} {industry} leads in {city} — want 5 free?"
 DEFAULT_BODY_HTML = """
 <div style="font-family:Arial,sans-serif;max-width:600px;color:#333;">
   <p>Hi {business_name},</p>
   <p>I run a lead generation platform and I noticed your {industry} business in {city}.</p>
   <p>Right now I have <strong>{lead_count} verified {industry} leads in {city}</strong> —
   businesses actively looking for contractors.</p>
-  <p>I'd like to send you <strong>10 leads completely free</strong> so you can see the quality.</p>
+  <p>I'd like to send you <strong>5 leads completely free</strong> so you can see the quality.</p>
   <p style="margin:30px 0;">
     <a href="{sample_url}" style="background:#2563eb;color:white;padding:12px 24px;
        text-decoration:none;border-radius:6px;font-weight:bold;">
-      Claim Your 10 Free Leads →
+      Claim Your 5 Free Leads →
     </a>
   </p>
   <p>Best,<br>The Take Your Lead Today Team</p>
@@ -51,7 +51,7 @@ FOLLOWUP_SUBJECT = "Following up — free {industry} leads in {city}"
 FOLLOWUP_BODY_HTML = """
 <div style="font-family:Arial,sans-serif;max-width:600px;color:#333;">
   <p>Hi {business_name},</p>
-  <p>Just following up — the offer for <strong>10 free {industry} leads in {city}</strong> is still open.</p>
+  <p>Just following up — the offer for <strong>5 free {industry} leads in {city}</strong> is still open.</p>
   <p style="margin:30px 0;">
     <a href="{sample_url}" style="background:#2563eb;color:white;padding:12px 24px;
        text-decoration:none;border-radius:6px;font-weight:bold;">

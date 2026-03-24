@@ -137,7 +137,7 @@ export default async function CityIndustryPage({
             href={sampleUrl}
             className="border border-blue-300 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-xl transition-all"
           >
-            Get 10 Free Sample Leads
+            Get 5 Free Sample Leads
           </Link>
         </div>
       </div>
@@ -324,7 +324,7 @@ export default async function CityIndustryPage({
             href={sampleUrl}
             className="border border-blue-300 text-white hover:bg-blue-700 font-semibold px-8 py-3 rounded-xl transition-all"
           >
-            Get 10 Free First
+            Get 5 Free First
           </Link>
         </div>
       </div>
