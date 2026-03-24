@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas import AISearchRequest, AISearchResponse
 from app.services.ai_search import ai_search
-from app.services.ollama_client import is_available
+from app.services.openai_client import is_available
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
