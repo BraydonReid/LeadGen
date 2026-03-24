@@ -66,6 +66,8 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+    environment:
+      INTERNAL_API_URL: http://backend:8000
     ports:
       - "3000:3000"
 

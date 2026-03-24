@@ -14,6 +14,8 @@ import type {
 } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Server-side fetches use the internal Docker network URL to avoid round-tripping through the public internet
+const SERVER_API_BASE = process.env.INTERNAL_API_URL ?? API_BASE;
 
 export interface ShopFilters {
   hasYelp?: boolean;
@@ -53,7 +55,7 @@ export async function shopSearch(
 
 export async function getStats(): Promise<StatsResponse> {
   try {
-    const res = await fetch(`${API_BASE}/api/shop/stats`, { next: { revalidate: 300 } });
+    const res = await fetch(`${SERVER_API_BASE}/api/shop/stats`, { next: { revalidate: 300 } });
     if (!res.ok) return { total_leads: 0, consumer_intent_count: 0, industries: [] };
     return res.json();
   } catch {
