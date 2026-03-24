@@ -101,7 +101,7 @@ async def request_magic_link(body: AuthRequest, db: AsyncSession = Depends(get_d
     verify_url = f"{FRONTEND_URL}/subscription-verify?token={token}"
 
     # Send via Resend
-    if settings.resend_api_key:
+    if settings.smtp_password:
         from app.services.email_sender import send_email
         html = f"""
 <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#1e293b;">
@@ -602,7 +602,7 @@ async def handle_invoice_failed(invoice: dict, db: AsyncSession):
 
     logger.warning(f"[subscription] Payment failed for {sub.buyer_email}")
 
-    if settings.resend_api_key:
+    if settings.smtp_password:
         from app.services.email_sender import send_email
         next_attempt = invoice.get("next_payment_attempt")
         retry_str = ""

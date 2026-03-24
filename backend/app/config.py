@@ -12,10 +12,13 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o-mini"
     # Email enrichment — Hunter.io
     hunter_api_key: str = ""
-    # Cold email sending — Resend
-    resend_api_key: str = ""
-    resend_from_email: str = "leads@yourdomain.com"
-    resend_from_name: str = "LeadGen"
+    # Email sending — Gmail SMTP (or any SMTP)
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = ""        # your Gmail address
+    smtp_password: str = ""    # Gmail App Password (16 chars)
+    email_from_name: str = "Take Your Lead Today"
+    email_from_address: str = ""  # defaults to smtp_user if blank
     # Public site URL — used in email links
     site_url: str = "http://localhost:3000"
 

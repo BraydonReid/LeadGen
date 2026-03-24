@@ -93,7 +93,7 @@ async def _run_subscriber_email_job():
 async def _run_email_send_job():
     """APScheduler job: send pending campaign emails every 15 minutes."""
     from app.config import settings
-    if not settings.resend_api_key:
+    if not settings.smtp_password:
         return
     from app.routers.email_campaigns import send_pending
     async with AsyncSessionLocal() as db:

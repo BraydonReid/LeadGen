@@ -260,7 +260,7 @@ async def run_subscriber_email_job(db: AsyncSession) -> dict:
     Called every hour by the scheduler. Checks all active subscribers and
     sends appropriate lifecycle emails. Safe to call repeatedly.
     """
-    if not settings.resend_api_key:
+    if not settings.smtp_password:
         return {"skipped": "RESEND_API_KEY not configured"}
 
     now = datetime.utcnow()

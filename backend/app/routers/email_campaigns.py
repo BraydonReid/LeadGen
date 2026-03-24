@@ -204,7 +204,7 @@ async def send_pending(db: AsyncSession = Depends(get_db)):
     Handles all 3 sequence steps.
     """
     from app.config import settings
-    if not settings.resend_api_key:
+    if not settings.smtp_password:
         return {"sent": 0, "reason": "RESEND_API_KEY not configured"}
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
