@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.models import Lead, SampleRequest
 from app.schemas import SampleRequestSchema
@@ -88,6 +89,42 @@ async def free_sample(body: SampleRequestSchema, db: AsyncSession = Depends(get_
     sample = SampleRequest(email=email, industry=industry_lower, state=state)
     db.add(sample)
     await db.commit()
+
+    # Send follow-up email (non-blocking)
+    if settings.smtp_password:
+        from app.services.email_sender import send_email
+        import asyncio
+        industry_label = body.industry.title()
+        state_label = state or "US"
+        shop_url = f"{settings.frontend_url}/shop?industry={body.industry}&state={state_label}"
+        html = f"""
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#1e293b;">
+  <div style="background:#2563eb;padding:20px 28px;border-radius:12px 12px 0 0;">
+    <span style="color:white;font-weight:900;font-size:20px;">Take Your Lead Today</span>
+  </div>
+  <div style="background:#f8fafc;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;">
+    <h2 style="margin-top:0;color:#1e293b;">Your 5 free {industry_label} leads are downloading now</h2>
+    <p style="color:#475569;">Your sample CSV is downloading directly in your browser.
+    These are real leads — same quality as our full lists.</p>
+    <p style="color:#475569;">Ready to get the full list? We have hundreds more
+    <strong>{industry_label}</strong> leads in <strong>{state_label}</strong> available right now.</p>
+    <p style="margin:28px 0;">
+      <a href="{shop_url}"
+         style="background:#2563eb;color:white;padding:14px 28px;text-decoration:none;
+                border-radius:8px;font-weight:bold;font-size:15px;display:inline-block;">
+        Browse Full {industry_label} Leads →
+      </a>
+    </p>
+    <p style="font-size:12px;color:#94a3b8;">
+      Take Your Lead Today &bull; <a href="{settings.frontend_url}" style="color:#94a3b8;">{settings.frontend_url}</a>
+    </p>
+  </div>
+</div>"""
+        asyncio.create_task(send_email(
+            email,
+            f"Your 5 free {industry_label} leads ({state_label})",
+            html,
+        ))
 
     industry_slug = body.industry.lower().replace(" ", "_")
     filename = f"sample_{industry_slug}_{state or 'US'}.csv"

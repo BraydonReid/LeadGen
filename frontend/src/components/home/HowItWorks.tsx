@@ -56,7 +56,7 @@ export default function HowItWorks() {
                   <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
                     {step.icon}
                   </div>
-                  <span className="text-4xl font-black text-slate-100">{step.number}</span>
+                  <span className="text-4xl font-black text-slate-300">{step.number}</span>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-3">{step.title}</h3>
                 <p className="text-slate-500 leading-relaxed">{step.description}</p>

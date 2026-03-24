@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="bg-slate-900 text-slate-400">
           <div className="max-w-6xl mx-auto px-6 py-12 grid sm:grid-cols-3 gap-10">
             <div>
-              <Image src="/logo.png" alt="Take Your Lead Today" height={40} width={160} className="h-10 w-auto object-contain mb-3 brightness-0 invert" />
+              <Image src="/logo.png" alt="Take Your Lead Today" height={40} width={160} className="h-10 w-auto object-contain mb-3" />
 
               <p className="text-sm leading-relaxed">
                 Verified business leads for contractors and sales professionals across
