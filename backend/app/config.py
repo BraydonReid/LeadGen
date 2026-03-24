@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     email_from_address: str = ""  # defaults to smtp_user if blank
     # Public site URL — used in email links
     site_url: str = "http://localhost:3000"
+    # Owner/test emails — downloads from these never increment times_sold
+    owner_emails: list[str] = ["braydonreid01@gmail.com"]
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

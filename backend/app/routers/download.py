@@ -37,8 +37,8 @@ async def download(
     )
 
     # Increment times_sold for each delivered lead (skip for owner test account)
-    OWNER_EMAILS = {"braydonreid01@gmail.com"}
-    if leads and purchase.buyer_email not in OWNER_EMAILS:
+    from app.config import settings
+    if leads and purchase.buyer_email not in set(settings.owner_emails):
         lead_ids = [l.id for l in leads]
         await db.execute(
             update(Lead)

@@ -56,7 +56,7 @@ export async function generateMetadata({
   const cityName = cityParts.join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return {
-    title: `Buy ${industryTitle} Leads in ${cityName}, ${state} | Texas LeadGen`,
+    title: `Buy ${industryTitle} Leads in ${cityName}, ${state} | Take Your Lead Today`,
     description: `${data?.count ?? "Hundreds of"} verified ${industryTitle.toLowerCase()} leads in ${cityName}, ${state}. Includes homeowners with active permits and local businesses. Starting at $${data?.avg_price?.toFixed(2) ?? "0.25"}/lead. Instant download.`,
     openGraph: {
       title: `${industryTitle} Leads in ${cityName}, ${state}`,

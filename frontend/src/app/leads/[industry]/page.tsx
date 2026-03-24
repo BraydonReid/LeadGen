@@ -33,7 +33,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const industryTitle = params.industry.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return {
-    title: `${industryTitle} Leads in Texas | Texas LeadGen`,
+    title: `${industryTitle} Leads in Texas | Take Your Lead Today`,
     description: `Buy verified ${industryTitle} leads across every major Texas city. Homeowners and businesses actively in-market. Instant download, starting at $0.10/lead.`,
   };
 }

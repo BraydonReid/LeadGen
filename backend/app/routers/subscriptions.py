@@ -25,7 +25,7 @@ import stripe
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -258,12 +258,11 @@ async def subscription_download(
     actual = len(leads)
 
     # Mark leads as sold (skip for owner test account)
-    OWNER_EMAILS = {"braydonreid01@gmail.com"}
+    OWNER_EMAILS = set(settings.owner_emails)
     if email not in OWNER_EMAILS:
-        from sqlalchemy import update as _update
         lead_ids = [l.id for l in leads]
         await db.execute(
-            _update(Lead).where(Lead.id.in_(lead_ids)).values(times_sold=Lead.times_sold + 1)
+            sa_update(Lead).where(Lead.id.in_(lead_ids)).values(times_sold=Lead.times_sold + 1)
         )
 
     # Spend rollover first, then regular credits
@@ -570,11 +569,8 @@ class BusinessListingRequest(BaseModel):
 @router.post("/list-business")
 async def list_business(body: BusinessListingRequest, db: AsyncSession = Depends(get_db)):
     """Self-submit a business to be listed in the lead database."""
-    from app.models import Lead
-    from sqlalchemy import select as sa_select
-
     source_url = f"self:{body.business_name.strip().lower()}:{body.city.strip().lower()}:{body.state.strip().lower()}"
-    existing = await db.execute(sa_select(Lead).where(Lead.source_url == source_url))
+    existing = await db.execute(select(Lead).where(Lead.source_url == source_url))
     if existing.scalar_one_or_none():
         return {"success": True, "already_listed": True}
 
@@ -630,10 +626,10 @@ async def handle_invoice_failed(invoice: dict, db: AsyncSession):
     <p>{retry_str}</p>
     <p>To avoid losing access, please update your payment method in Stripe:</p>
     <p style="margin:24px 0;">
-      <a href="https://billing.stripe.com/p/login/test_00g00000000000"
+      <a href="{FRONTEND_URL}/my-subscription"
          style="background:#2563eb;color:white;padding:14px 28px;text-decoration:none;
                 border-radius:8px;font-weight:bold;font-size:15px;display:inline-block;">
-        Update Payment Method →
+        Manage My Subscription →
       </a>
     </p>
     <p style="font-size:12px;color:#94a3b8;">
