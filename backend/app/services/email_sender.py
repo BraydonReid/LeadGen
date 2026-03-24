@@ -106,6 +106,7 @@ def _send_sync(to_email: str, subject: str, html_body: str, reply_to: str | None
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
             server.ehlo()
             server.starttls()
+            server.ehlo()  # required again after STARTTLS
             server.login(settings.smtp_user, settings.smtp_password)
             server.sendmail(from_addr, to_email, msg.as_string())
 
