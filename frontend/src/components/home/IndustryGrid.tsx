@@ -60,13 +60,9 @@ export default function IndustryGrid({ industries }: { industries: IndustryStat[
               <div className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
                 {industry}
               </div>
-              {count > 0 ? (
-                <div className="text-sm text-emerald-600 font-medium mt-1">
-                  {count.toLocaleString()} leads
-                </div>
-              ) : (
-                <div className="text-sm text-slate-400 mt-1">Browse →</div>
-              )}
+              <div className={`text-sm font-medium mt-1 ${count > 0 ? "text-emerald-600" : "text-slate-400"}`}>
+                {count > 0 ? `${count.toLocaleString()} leads` : "Browse →"}
+              </div>
             </Link>
           ))}
         </div>

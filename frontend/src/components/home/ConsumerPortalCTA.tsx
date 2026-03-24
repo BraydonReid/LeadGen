@@ -85,7 +85,7 @@ export default function ConsumerPortalCTA({ intentLeadCount }: { intentLeadCount
             </ul>
             <Link
               href="/request-service"
-              className="block text-center bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all"
+              className="block text-center bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all hover:scale-105"
             >
               Submit a Service Request →
             </Link>
