@@ -24,7 +24,7 @@ from app.services.email_sender import send_email
 
 logger = logging.getLogger(__name__)
 
-FRONTEND_URL = settings.site_url or "https://texasleadgen.com"
+FRONTEND_URL = settings.site_url or "https://takeyourleadtoday.com"
 
 
 # ── Email templates ────────────────────────────────────────────────────────────
@@ -33,19 +33,19 @@ def _base(body: str) -> str:
     return f"""
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1e293b;">
   <div style="background:#2563eb;padding:20px 28px;border-radius:12px 12px 0 0;">
-    <span style="color:white;font-weight:900;font-size:20px;">Texas LeadGen</span>
+    <span style="color:white;font-weight:900;font-size:20px;">Take Your Lead Today</span>
   </div>
   <div style="background:#f8fafc;padding:28px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;">
     {body}
     <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;">
-      <p>You're receiving this because you have an active Texas LeadGen subscription.</p>
+      <p>You're receiving this because you have an active Take Your Lead Today subscription.</p>
       <p>Manage your subscription at <a href="{FRONTEND_URL}/my-subscription" style="color:#2563eb;">{FRONTEND_URL}/my-subscription</a></p>
     </div>
   </div>
 </div>"""
 
 
-WELCOME_SUBJECT = "Welcome to Texas LeadGen Pro — here's how to get your first leads"
+WELCOME_SUBJECT = "Welcome to Take Your Lead Today Pro — here's how to get your first leads"
 WELCOME_BODY = _base("""
   <h2 style="color:#1e293b;margin-top:0;">You're in. Let's get you some leads.</h2>
   <p>Your Pro subscription is active. You have <strong>300 credits</strong> to spend this month —
@@ -70,7 +70,7 @@ WELCOME_BODY = _base("""
   highest predicted close rate. These are the ones to call first.</p>
 
   <p>Questions? Just reply to this email.</p>
-  <p>— The Texas LeadGen Team</p>
+  <p>— The Take Your Lead Today Team</p>
 """)
 
 
@@ -96,14 +96,14 @@ TIPS_DAY3_BODY = _base("""
       Get My Leads →
     </a>
   </p>
-  <p>— The Texas LeadGen Team</p>
+  <p>— The Take Your Lead Today Team</p>
 """)
 
 
 CHECKIN_DAY7_SUBJECT = "Quick check-in — did you close any jobs from your leads?"
 CHECKIN_DAY7_BODY = _base("""
   <h2 style="color:#1e293b;margin-top:0;">How's it going?</h2>
-  <p>It's been a week since you joined Texas LeadGen Pro. We'd love to hear how
+  <p>It's been a week since you joined Take Your Lead Today Pro. We'd love to hear how
   your outreach is going.</p>
 
   <p>If you closed even one job from our leads, we'd really appreciate a quick
@@ -120,7 +120,7 @@ CHECKIN_DAY7_BODY = _base("""
       Download More Leads →
     </a>
   </p>
-  <p>— The Texas LeadGen Team</p>
+  <p>— The Take Your Lead Today Team</p>
 """)
 
 
@@ -139,7 +139,7 @@ LOW_CREDITS_BODY = _base("""
       Download {credits_remaining} More Leads →
     </a>
   </p>
-  <p>— The Texas LeadGen Team</p>
+  <p>— The Take Your Lead Today Team</p>
 """)
 
 
@@ -157,7 +157,7 @@ EXPIRY_WARNING_BODY = _base("""
       Download Leads Now →
     </a>
   </p>
-  <p>— The Texas LeadGen Team</p>
+  <p>— The Take Your Lead Today Team</p>
 """)
 
 

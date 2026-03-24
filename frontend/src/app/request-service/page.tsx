@@ -2,7 +2,7 @@ import ServiceRequestForm from "@/components/request-service/ServiceRequestForm"
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Get Free Quotes From Texas Contractors — Texas LeadGen",
+  title: "Get Free Quotes From Contractors — Take Your Lead Today",
   description:
     "Tell us what you need and get matched with local Texas contractors. Houston, Dallas, Austin, San Antonio and all Texas cities. 100% free, no obligation.",
 };

@@ -2,7 +2,7 @@ import LeadShop from "@/components/shop/LeadShop";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Shop Texas Business Leads — Texas LeadGen",
+  title: "Shop Business Leads — Take Your Lead Today",
   description: "Search and buy verified Texas contractor and business leads by industry and city. Houston, Dallas, Austin, San Antonio and all Texas cities. Instant CSV download.",
 };
 

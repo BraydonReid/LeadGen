@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Texas Contractor Leads by Industry | Texas LeadGen",
+  title: "Contractor & Business Leads by Industry | Take Your Lead Today",
   description:
-    "Browse verified Texas contractor and business leads by industry. Roofing, HVAC, plumbing, electrician, solar, landscaping and 80+ more industries across every Texas city.",
+    "Browse verified contractor and business leads by industry. Roofing, HVAC, plumbing, electrician, solar, landscaping and 80+ more industries across every city.",
 };
 
 export const revalidate = 3600; // ISR: rebuild every hour
@@ -49,7 +49,7 @@ export default async function LeadsDirectoryPage() {
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-4xl font-black text-slate-900 mb-3">
-          Texas Contractor Leads by Industry
+          Contractor &amp; Business Leads by Industry
         </h1>
         <p className="text-lg text-slate-600 max-w-2xl">
           {totalLeads.toLocaleString()}+ verified leads across {industries.length} industries

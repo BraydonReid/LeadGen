@@ -4,7 +4,7 @@ import UTMCapture from "@/components/UTMCapture";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Texas LeadGen — Contractor & Business Leads in Texas",
+  title: "Take Your Lead Today — Contractor & Business Leads in Texas",
   description:
     "Buy verified Texas business leads by industry and city. Roofing, plumbing, HVAC, electrician, solar and more across Houston, Dallas, Austin, San Antonio. Starting at $0.10/lead. Instant CSV download.",
 };
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <span className="text-xl font-black text-slate-900 tracking-tight">Texas LeadGen</span>
+              <span className="text-xl font-black text-slate-900 tracking-tight">Take Your Lead Today</span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
@@ -49,11 +49,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="bg-slate-900 text-slate-400">
           <div className="max-w-6xl mx-auto px-6 py-12 grid sm:grid-cols-3 gap-10">
             <div>
-              <div className="text-white font-black text-lg mb-3">Texas LeadGen</div>
+              <div className="text-white font-black text-lg mb-3">Take Your Lead Today</div>
               <p className="text-sm leading-relaxed">
-                Texas-focused business leads for contractors and sales professionals across
-                Houston, Dallas, Austin, San Antonio, and every city in between.
-                No contracts, no commitments.
+                Verified business leads for contractors and sales professionals across
+                every city and industry. No contracts, no commitments.
               </p>
             </div>
             <div>

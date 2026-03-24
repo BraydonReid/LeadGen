@@ -106,7 +106,7 @@ async def request_magic_link(body: AuthRequest, db: AsyncSession = Depends(get_d
         html = f"""
 <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#1e293b;">
   <div style="background:#2563eb;padding:20px 28px;border-radius:12px 12px 0 0;">
-    <span style="color:white;font-weight:900;font-size:20px;">Texas LeadGen</span>
+    <span style="color:white;font-weight:900;font-size:20px;">Take Your Lead Today</span>
   </div>
   <div style="background:#f8fafc;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;">
     <h2 style="margin-top:0;color:#1e293b;">Sign in to your subscription</h2>
@@ -124,7 +124,7 @@ async def request_magic_link(body: AuthRequest, db: AsyncSession = Depends(get_d
     </p>
   </div>
 </div>"""
-        await send_email(email, "Sign in to Texas LeadGen", html)
+        await send_email(email, "Sign in to Take Your Lead Today", html)
 
     return {"sent": True}
 

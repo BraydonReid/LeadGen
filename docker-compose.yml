@@ -49,7 +49,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
       PYTHONUNBUFFERED: "1"
       SCRAPER_INSTANCE: east
       YELP_API_KEY: ${YELP_API_KEY:-}
@@ -67,7 +67,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
       PYTHONUNBUFFERED: "1"
       SCRAPER_INSTANCE: west
       YELP_API_KEY: ${YELP_API_KEY:-}
@@ -85,7 +85,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
       PYTHONUNBUFFERED: "1"
       SCRAPER_INSTANCE: north
       YELP_API_KEY: ${YELP_API_KEY:-}
@@ -103,7 +103,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
       PYTHONUNBUFFERED: "1"
       SCRAPER_INSTANCE: south
       YELP_API_KEY: ${YELP_API_KEY:-}
