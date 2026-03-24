@@ -90,6 +90,42 @@ async def _run_subscriber_email_job():
             logger.info(f"[scheduler] Subscriber emails: {result}")
 
 
+async def _run_contact_scrape_job():
+    """APScheduler job: extract contact names/titles from About pages every 30 minutes."""
+    from app.services.contact_scraper import scrape_contact_batch
+    async with AsyncSessionLocal() as db:
+        found = await scrape_contact_batch(db, batch_size=100)
+        if found > 0:
+            logger.info(f"[scheduler] Contact scraper found {found} new contacts")
+
+
+async def _run_smtp_discovery_job():
+    """APScheduler job: SMTP email pattern discovery every hour."""
+    from app.services.smtp_email_discovery import smtp_discovery_batch
+    async with AsyncSessionLocal() as db:
+        found = await smtp_discovery_batch(db, batch_size=30)
+        if found > 0:
+            logger.info(f"[scheduler] SMTP discovery found {found} new emails")
+
+
+async def _run_linkedin_builder_job():
+    """APScheduler job: build LinkedIn URLs for leads that don't have one (runs until caught up)."""
+    from app.services.linkedin_builder import build_linkedin_batch
+    async with AsyncSessionLocal() as db:
+        updated = await build_linkedin_batch(db, batch_size=1000)
+        if updated > 0:
+            logger.info(f"[scheduler] LinkedIn builder updated {updated} leads")
+
+
+async def _run_texas_sos_job():
+    """APScheduler job: enrich TX leads with registered agent names every 2 hours."""
+    from app.services.texas_sos_enricher import enrich_texas_contacts_batch
+    async with AsyncSessionLocal() as db:
+        found = await enrich_texas_contacts_batch(db, batch_size=20)
+        if found > 0:
+            logger.info(f"[scheduler] Texas SOS enriched {found} contacts")
+
+
 async def _run_email_send_job():
     """APScheduler job: send pending campaign emails every 15 minutes."""
     from app.config import settings
@@ -112,6 +148,11 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(_run_phone_clean_job, "interval", minutes=30, id="phone_cleaner")
     scheduler.add_job(_run_dedup_job, "interval", hours=24, id="deduplication")
     scheduler.add_job(_run_subscriber_email_job, "interval", hours=1, id="subscriber_emails")
+    # Decision-maker enrichment pipeline
+    scheduler.add_job(_run_contact_scrape_job, "interval", minutes=30, id="contact_scraper")
+    scheduler.add_job(_run_smtp_discovery_job, "interval", hours=1, id="smtp_discovery")
+    scheduler.add_job(_run_linkedin_builder_job, "interval", minutes=15, id="linkedin_builder")
+    scheduler.add_job(_run_texas_sos_job, "interval", hours=2, id="texas_sos")
     scheduler.start()
     logger.info("[scheduler] APScheduler started — scoring/enrichment/campaigns active")
     yield

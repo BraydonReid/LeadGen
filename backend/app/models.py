@@ -44,6 +44,12 @@ class Lead(Base):
     phone_valid: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     duplicate_of_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     website_status: Mapped[str | None] = mapped_column(String(10), nullable=True)  # 'ok'|'dead'|'unknown'
+    # Decision-maker enrichment — contact title, LinkedIn, and enrichment tracking
+    contact_title: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    linkedin_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    contact_scrape_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    smtp_discovery_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    texas_sos_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Purchase(Base):
