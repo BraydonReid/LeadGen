@@ -88,8 +88,8 @@ async def score_lead_batch(db: AsyncSession, batch_size: int = 50) -> int:
     if not leads:
         return 0
 
-    # Score up to 5 leads concurrently (respects 500 RPM / 200k TPM limits)
-    sem = asyncio.Semaphore(5)
+    # Score up to 2 leads concurrently to avoid rate limits on lower API tiers
+    sem = asyncio.Semaphore(2)
 
     async def _score_one(lead: Lead) -> dict | None:
         async with sem:
