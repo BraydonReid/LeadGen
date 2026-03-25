@@ -30,8 +30,8 @@ from app.models import Lead
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE = 30
-CONCURRENCY = 5   # SMTP is slow — keep low to avoid flooding
+BATCH_SIZE = 200
+CONCURRENCY = 10  # More throughput — SMTP timeouts are 8s so 10 concurrent is safe
 
 EHLO_DOMAIN = "takeyourleadtoday.com"
 SENDER = f"verify@{EHLO_DOMAIN}"
