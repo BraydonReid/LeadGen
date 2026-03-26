@@ -125,9 +125,7 @@ async def smtp_discovery_batch(db: AsyncSession, batch_size: int = BATCH_SIZE) -
         .where(
             and_(
                 Lead.website.isnot(None),
-                Lead.website_status == "ok",
                 Lead.email.is_(None),
-                Lead.website_scrape_attempted_at.isnot(None),  # scraper already ran
                 Lead.smtp_discovery_attempted_at.is_(None),
             )
         )
