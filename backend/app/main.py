@@ -145,12 +145,12 @@ async def _run_ddg_search_job():
 
 
 async def _run_nominatim_job():
-    """APScheduler job: Nominatim address enrichment every 15 minutes (rate-limited to 1 req/sec)."""
+    """APScheduler job: multi-geocoder address enrichment (Nominatim + Photon) every 15 minutes."""
     from app.services.nominatim_enricher import nominatim_enrich_batch
     async with AsyncSessionLocal() as db:
         found = await nominatim_enrich_batch(db)
         if found > 0:
-            logger.info(f"[scheduler] Nominatim enrichment found {found} addresses")
+            logger.info(f"[scheduler] Geocoder enrichment found {found} addresses")
 
 
 async def _run_email_send_job():
