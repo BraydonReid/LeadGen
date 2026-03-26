@@ -69,7 +69,7 @@ class StatsResponse(BaseModel):
     industries: list[IndustryStat]
     pct_with_phone: float = 0.0
     pct_with_email: float = 0.0
-    pct_with_contact: float = 0.0
+    pct_ai_scored: float = 0.0
     pct_with_address: float = 0.0
 
 

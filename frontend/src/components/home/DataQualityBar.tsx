@@ -1,7 +1,7 @@
 interface Props {
   pctPhone: number;
   pctEmail: number;
-  pctContact: number;
+  pctScored: number;
   pctAddress: number;
 }
 
@@ -9,7 +9,7 @@ export default function DataQualityBar({ pctPhone, pctEmail, pctContact, pctAddr
   const stats = [
     { label: "Phone Number", value: pctPhone, color: "bg-blue-500" },
     { label: "Email Address", value: pctEmail, color: "bg-emerald-500" },
-    { label: "Contact Name", value: pctContact, color: "bg-violet-500" },
+    { label: "AI Scored", value: pctScored, color: "bg-violet-500" },
     { label: "Street Address", value: pctAddress, color: "bg-amber-500" },
   ];
 

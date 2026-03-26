@@ -55,7 +55,7 @@ export interface StatsResponse {
   industries: IndustryStat[];
   pct_with_phone: number;
   pct_with_email: number;
-  pct_with_contact: number;
+  pct_ai_scored: number;
   pct_with_address: number;
 }
 

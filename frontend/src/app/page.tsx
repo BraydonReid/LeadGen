@@ -18,7 +18,7 @@ export default async function HomePage() {
       <DataQualityBar
         pctPhone={stats.pct_with_phone}
         pctEmail={stats.pct_with_email}
-        pctContact={stats.pct_with_contact}
+        pctScored={stats.pct_ai_scored}
         pctAddress={stats.pct_with_address}
       />
       <HowItWorks />

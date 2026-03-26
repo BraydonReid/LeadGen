@@ -195,11 +195,11 @@ async def shop_stats(db: AsyncSession = Depends(get_db)):
     n = (await db.execute(sample_count_stmt)).scalar_one() or 1
     phone_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.phone.isnot(None))
     email_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.email.isnot(None))
-    contact_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.contact_name.isnot(None))
+    scored_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.conversion_score.isnot(None))
     address_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.full_address.isnot(None))
     n_phone = (await db.execute(phone_stmt)).scalar_one()
     n_email = (await db.execute(email_stmt)).scalar_one()
-    n_contact = (await db.execute(contact_stmt)).scalar_one()
+    n_scored = (await db.execute(scored_stmt)).scalar_one()
     n_address = (await db.execute(address_stmt)).scalar_one()
 
     return StatsResponse(
@@ -208,6 +208,6 @@ async def shop_stats(db: AsyncSession = Depends(get_db)):
         industries=industries,
         pct_with_phone=round(n_phone / n * 100, 1),
         pct_with_email=round(n_email / n * 100, 1),
-        pct_with_contact=round(n_contact / n * 100, 1),
+        pct_ai_scored=round(n_scored / n * 100, 1),
         pct_with_address=round(n_address / n * 100, 1),
     )
