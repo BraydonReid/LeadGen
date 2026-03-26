@@ -38,7 +38,7 @@ async def _run_scoring_job():
         return
 
     async with AsyncSessionLocal() as db:
-        scored = await score_lead_batch(db, batch_size=200)
+        scored = await score_lead_batch(db, batch_size=500)
         if scored > 0:
             logger.info(f"[scheduler] Auto-scored {scored} leads")
 
