@@ -21,8 +21,8 @@ from app.models import Lead
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE = 50
-CONCURRENCY = 5  # WHOIS servers rate-limit aggressively — keep low
+BATCH_SIZE = 200
+CONCURRENCY = 10  # WHOIS hit rate is excellent — push harder
 
 # Privacy protection services return junk emails — skip them
 PRIVACY_PATTERNS = re.compile(

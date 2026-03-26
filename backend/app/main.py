@@ -171,7 +171,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(_run_smtp_discovery_job, "interval", minutes=10, id="smtp_discovery")
     scheduler.add_job(_run_linkedin_builder_job, "interval", minutes=15, id="linkedin_builder")
     scheduler.add_job(_run_texas_sos_job, "interval", hours=2, id="texas_sos")
-    scheduler.add_job(_run_whois_job, "interval", minutes=30, id="whois_enrichment")
+    scheduler.add_job(_run_whois_job, "interval", minutes=10, id="whois_enrichment")
     scheduler.add_job(_run_ddg_search_job, "interval", minutes=20, id="ddg_search")
     scheduler.start()
     logger.info("[scheduler] APScheduler started — scoring/enrichment/campaigns active")
