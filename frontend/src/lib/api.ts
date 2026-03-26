@@ -64,10 +64,11 @@ export async function shopSearch(
 export async function getStats(): Promise<StatsResponse> {
   try {
     const res = await fetch(`${SERVER_API_BASE}/api/shop/stats`, { next: { revalidate: 300 } });
-    if (!res.ok) return { total_leads: 0, consumer_intent_count: 0, industries: [] };
+    const fallback = { total_leads: 0, consumer_intent_count: 0, industries: [], pct_with_phone: 0, pct_with_email: 0, pct_with_contact: 0, pct_with_address: 0 };
+    if (!res.ok) return fallback;
     return res.json();
   } catch {
-    return { total_leads: 0, consumer_intent_count: 0, industries: [] };
+    return { total_leads: 0, consumer_intent_count: 0, industries: [], pct_with_phone: 0, pct_with_email: 0, pct_with_contact: 0, pct_with_address: 0 };
   }
 }
 
