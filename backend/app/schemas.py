@@ -39,6 +39,10 @@ class SearchQuery(BaseModel):
     yelp_max: float | None = None
     added_days: int | None = None
     min_quality: int | None = None
+    has_email: bool | None = None
+    has_contact: bool | None = None
+    has_address: bool | None = None
+    min_conversion: int | None = None
 
 
 class SearchResponse(BaseModel):
@@ -63,6 +67,10 @@ class StatsResponse(BaseModel):
     total_leads: int
     consumer_intent_count: int = 0
     industries: list[IndustryStat]
+    pct_with_phone: float = 0.0
+    pct_with_email: float = 0.0
+    pct_with_contact: float = 0.0
+    pct_with_address: float = 0.0
 
 
 class CheckoutRequest(BaseModel):

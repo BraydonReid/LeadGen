@@ -31,6 +31,10 @@ async def shop_search(
     yelp_max: float | None = Query(default=None, ge=1.0, le=5.0),
     added_days: int | None = Query(default=None, ge=1, le=365),
     min_quality: int | None = Query(default=None, ge=0, le=100),
+    has_email: bool | None = Query(default=None),
+    has_contact: bool | None = Query(default=None),
+    has_address: bool | None = Query(default=None),
+    min_conversion: int | None = Query(default=None, ge=0, le=100),
     db: AsyncSession = Depends(get_db),
 ):
     industry_lower = industry.strip().lower()
@@ -59,6 +63,7 @@ async def shop_search(
         func.lower(Lead.industry).contains(industry_lower),
         Lead.times_sold < 5,
         Lead.scraped_date >= freshness_cutoff,
+        Lead.duplicate_of_id.is_(None),
     ]
     if state_upper:
         filters.append(Lead.state == state_upper)
@@ -84,6 +89,14 @@ async def shop_search(
         filters.append(Lead.scraped_date >= cutoff)
     if min_quality is not None:
         filters.append(Lead.quality_score >= min_quality)
+    if has_email:
+        filters.append(Lead.email.isnot(None))
+    if has_contact:
+        filters.append(Lead.contact_name.isnot(None))
+    if has_address:
+        filters.append(Lead.full_address.isnot(None))
+    if min_conversion is not None:
+        filters.append(Lead.conversion_score >= min_conversion)
 
     # Total count
     count_stmt = select(func.count()).select_from(Lead).where(*filters)
@@ -105,6 +118,8 @@ async def shop_search(
             lead_type=lead_type, zip_code=zip_code, radius_miles=radius_miles,
             has_yelp=has_yelp, yelp_min=yelp_min, yelp_max=yelp_max,
             added_days=added_days, min_quality=min_quality,
+            has_email=has_email, has_contact=has_contact,
+            has_address=has_address, min_conversion=min_conversion,
         )
 
     if not sample_leads:
@@ -169,8 +184,30 @@ async def shop_stats(db: AsyncSession = Depends(get_db)):
     rows = (await db.execute(industry_stmt)).all()
     industries = [IndustryStat(industry=r.industry.title(), count=r.cnt) for r in rows]
 
+    # Coverage stats — sampled from the 5k most recent non-duplicate business leads
+    sample_base = [
+        Lead.times_sold < 5,
+        Lead.scraped_date >= freshness_cutoff,
+        Lead.duplicate_of_id.is_(None),
+        Lead.lead_type == "business",
+    ]
+    sample_count_stmt = select(func.count()).select_from(Lead).where(*sample_base)
+    n = (await db.execute(sample_count_stmt)).scalar_one() or 1
+    phone_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.phone.isnot(None))
+    email_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.email.isnot(None))
+    contact_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.contact_name.isnot(None))
+    address_stmt = select(func.count()).select_from(Lead).where(*sample_base, Lead.full_address.isnot(None))
+    n_phone = (await db.execute(phone_stmt)).scalar_one()
+    n_email = (await db.execute(email_stmt)).scalar_one()
+    n_contact = (await db.execute(contact_stmt)).scalar_one()
+    n_address = (await db.execute(address_stmt)).scalar_one()
+
     return StatsResponse(
         total_leads=total_leads,
         consumer_intent_count=consumer_count,
         industries=industries,
+        pct_with_phone=round(n_phone / n * 100, 1),
+        pct_with_email=round(n_email / n * 100, 1),
+        pct_with_contact=round(n_contact / n * 100, 1),
+        pct_with_address=round(n_address / n * 100, 1),
     )

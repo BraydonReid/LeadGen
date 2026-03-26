@@ -31,6 +31,10 @@ export interface SearchQuery {
   yelp_max?: number | null;
   added_days?: number | null;
   min_quality?: number | null;
+  has_email?: boolean | null;
+  has_contact?: boolean | null;
+  has_address?: boolean | null;
+  min_conversion?: number | null;
 }
 
 export interface ShopResponse {
@@ -49,6 +53,10 @@ export interface StatsResponse {
   total_leads: number;
   consumer_intent_count: number;
   industries: IndustryStat[];
+  pct_with_phone: number;
+  pct_with_email: number;
+  pct_with_contact: number;
+  pct_with_address: number;
 }
 
 export interface CheckoutRequest {

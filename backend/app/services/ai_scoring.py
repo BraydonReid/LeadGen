@@ -35,10 +35,12 @@ Lead profile:
 - Has Street Address: {has_address}
 - Has Named Contact: {has_contact}
 - Website URL: {website}
+- Yelp/Google Rating: {yelp_rating}
+- Years in Business: {years_in_business}
 
 Scoring guide:
-- 85-100: Multiple contact methods, named contact, established web presence, high-value industry
-- 65-84: Good contact data, appears active, reachable business
+- 85-100: Multiple contact methods, named contact, established web presence, strong reputation (4.0+ stars, 50+ reviews), 5+ years in business
+- 65-84: Good contact data, appears active and reachable, decent reputation
 - 45-64: Partial data, reachable but may require extra effort
 - 25-44: Minimal data, cold outreach will be difficult
 - 0-24: Very limited data, likely outdated or very hard to reach
@@ -48,6 +50,15 @@ Respond ONLY with a valid JSON object and nothing else:
 
 
 def _build_prompt(lead: Lead) -> str:
+    if lead.yelp_rating:
+        yelp_str = f"{lead.yelp_rating:.1f}★"
+        if lead.review_count:
+            yelp_str += f" ({lead.review_count} reviews)"
+    else:
+        yelp_str = "Not available"
+
+    years_str = f"{lead.years_in_business} years" if lead.years_in_business else "Unknown"
+
     return SCORING_PROMPT.format(
         business_name=lead.business_name,
         industry=lead.industry,
@@ -59,6 +70,8 @@ def _build_prompt(lead: Lead) -> str:
         has_address="Yes" if lead.full_address else "No",
         has_contact="Yes" if lead.contact_name else "No",
         website=lead.website or "None",
+        yelp_rating=yelp_str,
+        years_in_business=years_str,
     )
 
 

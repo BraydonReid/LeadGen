@@ -1,5 +1,7 @@
 import ComparisonTable from "@/components/home/ComparisonTable";
 import ConsumerPortalCTA from "@/components/home/ConsumerPortalCTA";
+import CsvPreview from "@/components/home/CsvPreview";
+import DataQualityBar from "@/components/home/DataQualityBar";
 import Features from "@/components/home/Features";
 import Hero from "@/components/home/Hero";
 import HowItWorks from "@/components/home/HowItWorks";
@@ -13,6 +15,12 @@ export default async function HomePage() {
   return (
     <>
       <Hero totalLeads={stats.total_leads} consumerIntentCount={stats.consumer_intent_count} />
+      <DataQualityBar
+        pctPhone={stats.pct_with_phone}
+        pctEmail={stats.pct_with_email}
+        pctContact={stats.pct_with_contact}
+        pctAddress={stats.pct_with_address}
+      />
       <HowItWorks />
       <ComparisonTable />
       <ConsumerPortalCTA intentLeadCount={stats.consumer_intent_count} />
@@ -55,6 +63,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <CsvPreview />
 
       {/* Pricing preview */}
       <section className="py-20 bg-slate-50">

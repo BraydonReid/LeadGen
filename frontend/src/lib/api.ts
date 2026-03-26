@@ -23,6 +23,10 @@ export interface ShopFilters {
   yelpMax?: number;
   addedDays?: number;
   minQuality?: number;
+  hasEmail?: boolean;
+  hasContact?: boolean;
+  hasAddress?: boolean;
+  minConversion?: number;
 }
 
 export async function shopSearch(
@@ -45,6 +49,10 @@ export async function shopSearch(
   if (filters?.yelpMax != null) params.set("yelp_max", String(filters.yelpMax));
   if (filters?.addedDays != null) params.set("added_days", String(filters.addedDays));
   if (filters?.minQuality != null) params.set("min_quality", String(filters.minQuality));
+  if (filters?.hasEmail) params.set("has_email", "true");
+  if (filters?.hasContact) params.set("has_contact", "true");
+  if (filters?.hasAddress) params.set("has_address", "true");
+  if (filters?.minConversion != null) params.set("min_conversion", String(filters.minConversion));
   const res = await fetch(`${API_BASE}/api/shop?${params}`, { cache: "no-store" });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

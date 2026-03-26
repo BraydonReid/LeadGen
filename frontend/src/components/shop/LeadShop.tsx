@@ -49,12 +49,20 @@ export default function LeadShop() {
   const [hasYelp, setHasYelp] = useState(false);
   const [yelpMode, setYelpMode] = useState<"any" | "high" | "struggling">("any");
   const [addedDays, setAddedDays] = useState<number | undefined>(undefined);
+  const [hasEmail, setHasEmail] = useState(false);
+  const [hasContact, setHasContact] = useState(false);
+  const [hasAddress, setHasAddress] = useState(false);
+  const [minConversion, setMinConversion] = useState<number | undefined>(undefined);
 
   const getFilters = (): ShopFilters => ({
     hasYelp: hasYelp || yelpMode !== "any" || undefined,
     yelpMin: yelpMode === "high" ? 4.0 : undefined,
     yelpMax: yelpMode === "struggling" ? 3.0 : undefined,
     addedDays: addedDays,
+    hasEmail: hasEmail || undefined,
+    hasContact: hasContact || undefined,
+    hasAddress: hasAddress || undefined,
+    minConversion: minConversion,
   });
 
   // AI search mode
@@ -352,9 +360,9 @@ export default function LeadShop() {
               className="text-xs text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1"
             >
               <span>{showAdvanced ? "▾" : "▸"}</span> Advanced filters
-              {(hasYelp || yelpMode !== "any" || addedDays) && (
+              {(hasYelp || yelpMode !== "any" || addedDays || hasEmail || hasContact || hasAddress || minConversion != null) && (
                 <span className="ml-1 bg-blue-100 text-blue-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
-                  {[hasYelp || yelpMode !== "any", !!addedDays].filter(Boolean).length} active
+                  {[hasYelp || yelpMode !== "any", !!addedDays, hasEmail, hasContact, hasAddress, minConversion != null].filter(Boolean).length} active
                 </span>
               )}
             </button>
@@ -426,6 +434,59 @@ export default function LeadShop() {
                       Struggling businesses (≤3.0 Yelp) are ideal leads for marketing agencies, reputation management, and CRM vendors. They know they have a problem and are actively looking for solutions.
                     </p>
                   )}
+                </div>
+
+                {/* Contact data completeness */}
+                <div>
+                  <p className="text-xs font-semibold text-slate-600 mb-1">Contact Data</p>
+                  <p className="text-xs text-slate-400 mb-2">Filter to leads with verified contact information already in the CSV.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Has Email", state: hasEmail, setter: setHasEmail },
+                      { label: "Has Contact Name", state: hasContact, setter: setHasContact },
+                      { label: "Has Street Address", state: hasAddress, setter: setHasAddress },
+                    ].map(({ label, state: active, setter }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setter(!active)}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                          active
+                            ? "bg-emerald-600 text-white"
+                            : "bg-white border border-slate-200 text-slate-600 hover:border-emerald-300"
+                        }`}
+                      >
+                        {active ? "✓ " : ""}{label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* AI Score filter */}
+                <div>
+                  <p className="text-xs font-semibold text-slate-600 mb-1">Min AI Conversion Score</p>
+                  <p className="text-xs text-slate-400 mb-2">Only show leads above a certain AI quality score (0–100).</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Any", value: undefined },
+                      { label: "50+", value: 50 },
+                      { label: "65+", value: 65 },
+                      { label: "75+", value: 75 },
+                    ].map(({ label, value }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setMinConversion(value)}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                          minConversion === value
+                            ? "bg-blue-600 text-white"
+                            : "bg-white border border-slate-200 text-slate-600 hover:border-blue-300"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -713,7 +774,7 @@ export default function LeadShop() {
             )}
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-500 text-center">
-              Phone, email, and full address are included in the downloaded CSV.
+              Phone, email, address, contact name, Yelp rating, years in business, and AI conversion score included in CSV.
               All leads are refreshed within the last 180 days and sold to at most 5 buyers.
             </div>
           </div>
