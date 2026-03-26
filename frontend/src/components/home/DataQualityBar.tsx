@@ -5,7 +5,7 @@ interface Props {
   pctAddress: number;
 }
 
-export default function DataQualityBar({ pctPhone, pctEmail, pctContact, pctAddress }: Props) {
+export default function DataQualityBar({ pctPhone, pctEmail, pctScored, pctAddress }: Props) {
   const stats = [
     { label: "Phone Number", value: pctPhone, color: "bg-blue-500" },
     { label: "Email Address", value: pctEmail, color: "bg-emerald-500" },
