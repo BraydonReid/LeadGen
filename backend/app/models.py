@@ -50,6 +50,8 @@ class Lead(Base):
     contact_scrape_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     smtp_discovery_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     texas_sos_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    whois_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    ddg_search_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Purchase(Base):

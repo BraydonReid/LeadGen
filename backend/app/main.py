@@ -126,6 +126,24 @@ async def _run_texas_sos_job():
             logger.info(f"[scheduler] Texas SOS enriched {found} contacts")
 
 
+async def _run_whois_job():
+    """APScheduler job: WHOIS email lookup every 30 minutes."""
+    from app.services.whois_enricher import whois_enrich_batch
+    async with AsyncSessionLocal() as db:
+        found = await whois_enrich_batch(db)
+        if found > 0:
+            logger.info(f"[scheduler] WHOIS enrichment found {found} emails")
+
+
+async def _run_ddg_search_job():
+    """APScheduler job: DuckDuckGo email search every 20 minutes."""
+    from app.services.ddg_email_search import ddg_email_search_batch
+    async with AsyncSessionLocal() as db:
+        found = await ddg_email_search_batch(db)
+        if found > 0:
+            logger.info(f"[scheduler] DDG search found {found} emails")
+
+
 async def _run_email_send_job():
     """APScheduler job: send pending campaign emails every 15 minutes."""
     from app.config import settings
@@ -153,6 +171,8 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(_run_smtp_discovery_job, "interval", minutes=10, id="smtp_discovery")
     scheduler.add_job(_run_linkedin_builder_job, "interval", minutes=15, id="linkedin_builder")
     scheduler.add_job(_run_texas_sos_job, "interval", hours=2, id="texas_sos")
+    scheduler.add_job(_run_whois_job, "interval", minutes=30, id="whois_enrichment")
+    scheduler.add_job(_run_ddg_search_job, "interval", minutes=20, id="ddg_search")
     scheduler.start()
     logger.info("[scheduler] APScheduler started — scoring/enrichment/campaigns active")
     yield
