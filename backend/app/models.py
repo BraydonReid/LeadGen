@@ -52,6 +52,7 @@ class Lead(Base):
     texas_sos_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     whois_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     ddg_search_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    nominatim_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Purchase(Base):
