@@ -21,8 +21,8 @@ from app.models import Lead
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE = 200
-CONCURRENCY = 10  # WHOIS hit rate is excellent — push harder
+BATCH_SIZE = 500
+CONCURRENCY = 20
 
 # Privacy protection services return junk emails — skip them
 PRIVACY_PATTERNS = re.compile(
