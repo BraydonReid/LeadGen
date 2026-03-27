@@ -51,43 +51,18 @@ PLANS = {
         "leads": 50,
         "name": "Lead Credits — Starter",
         "description": "50 fresh leads every month. Any industry, any state. Cancel anytime.",
-        "interval": "month",
     },
     "pro": {
         "price_cents": 9999,
         "leads": 300,
         "name": "Lead Credits — Pro",
         "description": "300 fresh leads every month. Any industry, any state. Cancel anytime.",
-        "interval": "month",
     },
     "agency": {
         "price_cents": 29900,
         "leads": 1000,
         "name": "Lead Credits — Agency",
         "description": "1,000 fresh leads every month. Any industry, any state. Cancel anytime.",
-        "interval": "month",
-    },
-    # Annual plans — same monthly credits, billed once per year (~2 months free)
-    "starter_annual": {
-        "price_cents": 29900,
-        "leads": 50,
-        "name": "Lead Credits — Starter (Annual)",
-        "description": "50 fresh leads every month. Billed annually — 2 months free.",
-        "interval": "year",
-    },
-    "pro_annual": {
-        "price_cents": 99900,
-        "leads": 300,
-        "name": "Lead Credits — Pro (Annual)",
-        "description": "300 fresh leads every month. Billed annually — 2 months free.",
-        "interval": "year",
-    },
-    "agency_annual": {
-        "price_cents": 299000,
-        "leads": 1000,
-        "name": "Lead Credits — Agency (Annual)",
-        "description": "1,000 fresh leads every month. Billed annually — 2 months free.",
-        "interval": "year",
     },
 }
 
@@ -220,7 +195,7 @@ async def create_subscription_checkout(body: SubscribeRequest):
                 "price_data": {
                     "currency": "usd",
                     "unit_amount": plan["price_cents"],
-                    "recurring": {"interval": plan.get("interval", "month")},
+                    "recurring": {"interval": "month"},
                     "product_data": {
                         "name": plan["name"],
                         "description": plan["description"],

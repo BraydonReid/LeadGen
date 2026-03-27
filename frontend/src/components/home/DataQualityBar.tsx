@@ -35,9 +35,6 @@ export default function DataQualityBar({ pctPhone, pctEmail, pctScored, pctAddre
             </div>
           ))}
         </div>
-        <p className="text-center text-slate-500 text-xs mt-6">
-          AI conversion scores included on every lead. No other Texas lead provider includes this.
-        </p>
       </div>
     </section>
   );
