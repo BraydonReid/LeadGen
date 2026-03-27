@@ -30,8 +30,8 @@ from app.models import Lead
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE = 200
-CONCURRENCY = 10  # More throughput — SMTP timeouts are 8s so 10 concurrent is safe
+BATCH_SIZE = 50
+CONCURRENCY = 5
 
 EHLO_DOMAIN = "takeyourleadtoday.com"
 SENDER = f"verify@{EHLO_DOMAIN}"
@@ -57,7 +57,7 @@ def _get_mx(domain: str) -> str | None:
 def _smtp_rcpt(email: str, mx_host: str) -> bool:
     """Return True if MX server responds 250 to RCPT TO (address exists)."""
     try:
-        with smtplib.SMTP(timeout=8) as s:
+        with smtplib.SMTP(timeout=5) as s:
             s.connect(mx_host, 25)
             s.helo(EHLO_DOMAIN)
             s.mail(SENDER)
@@ -148,7 +148,7 @@ async def smtp_discovery_batch(db: AsyncSession, batch_size: int = BATCH_SIZE) -
     async def _process(lead: Lead) -> bool:
         async with semaphore:
             try:
-                email = await _discover(lead)
+                email = await asyncio.wait_for(_discover(lead), timeout=45)
                 if email:
                     lead.email = email
                     lead.email_source = "smtp_discovery"
