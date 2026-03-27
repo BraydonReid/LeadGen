@@ -11,7 +11,7 @@ from app.services.pricing import calculate_lead_price
 from app.services.geo import get_cities_in_radius, get_zip_info
 
 # Leads not refreshed within this window are considered stale and hidden from shop
-FRESHNESS_DAYS = 180
+FRESHNESS_DAYS = 365
 
 
 router = APIRouter()
@@ -64,6 +64,7 @@ async def shop_search(
         Lead.times_sold < 5,
         Lead.scraped_date >= freshness_cutoff,
         Lead.duplicate_of_id.is_(None),
+        Lead.archived == False,  # noqa: E712
     ]
     if state_upper:
         filters.append(Lead.state == state_upper)
@@ -164,6 +165,7 @@ async def shop_stats(db: AsyncSession = Depends(get_db)):
     total_stmt = select(func.count()).select_from(Lead).where(
         Lead.times_sold < 5,
         Lead.scraped_date >= freshness_cutoff,
+        Lead.archived == False,  # noqa: E712
     )
     total_leads = (await db.execute(total_stmt)).scalar_one()
 
@@ -171,6 +173,7 @@ async def shop_stats(db: AsyncSession = Depends(get_db)):
         Lead.lead_type == "consumer",
         Lead.times_sold < 5,
         Lead.scraped_date >= freshness_cutoff,
+        Lead.archived == False,  # noqa: E712
     )
     consumer_count = (await db.execute(consumer_stmt)).scalar_one()
 
@@ -190,6 +193,7 @@ async def shop_stats(db: AsyncSession = Depends(get_db)):
         Lead.scraped_date >= freshness_cutoff,
         Lead.duplicate_of_id.is_(None),
         Lead.lead_type == "business",
+        Lead.archived == False,  # noqa: E712
     ]
     sample_count_stmt = select(func.count()).select_from(Lead).where(*sample_base)
     n = (await db.execute(sample_count_stmt)).scalar_one() or 1

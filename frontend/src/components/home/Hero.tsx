@@ -45,7 +45,7 @@ export default function Hero({ totalLeads, consumerIntentCount }: { totalLeads: 
           <div className="flex flex-wrap gap-6 text-sm text-slate-400">
             {[
               "98% phone verified",
-              "Scraped this week",
+              "Data refreshed within 12 months",
               "No subscription required",
               "Instant CSV download",
             ].map((item) => (
