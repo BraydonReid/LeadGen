@@ -234,44 +234,111 @@ INDUSTRIES: dict[str, list[str]] = {
     "surveying":            ["land surveyor", "property surveying", "boundary survey", "topographic survey"],
 }
 
-# ── Location pool — Texas-focused for maximum lead density and SEO ─────────────
-# Every Texas city/CDP with 25,000+ population + key suburbs.
+# ── Location pool — every Texas city/town with meaningful business activity ─────
+# Covers all major metros, suburbs, regional cities, and smaller towns statewide.
 # Both scraper instances cover all of Texas; their separate history files
 # ensure they naturally diversify across different city × industry combos.
 LOCATIONS: dict[str, list[str]] = {
     "TX": [
-        # Major metros
+        # ── Major metros ──────────────────────────────────────────────────────
         "Houston", "San Antonio", "Dallas", "Austin", "Fort Worth", "El Paso",
-        # DFW Metroplex
+
+        # ── DFW Metroplex ─────────────────────────────────────────────────────
         "Arlington", "Plano", "Irving", "Garland", "Frisco", "McKinney",
         "Grand Prairie", "Mesquite", "Carrollton", "Denton", "Richardson",
         "Lewisville", "Allen", "Flower Mound", "North Richland Hills",
         "Mansfield", "Euless", "Bedford", "Haltom City", "Grapevine",
         "Cedar Hill", "Rowlett", "DeSoto", "Duncanville", "Burleson",
         "Waxahachie", "Wylie", "Sachse", "Murphy", "Coppell", "Keller",
-        "Southlake", "Colleyville", "Lewisville", "Denton", "Rockwall",
-        # Houston Metro
+        "Southlake", "Colleyville", "Rockwall", "Prosper", "Celina",
+        "Anna", "Melissa", "Princeton", "Royse City", "Fate", "Forney",
+        "Seagoville", "Balch Springs", "Farmers Branch", "Addison",
+        "University Park", "Highland Park", "Roanoke", "Trophy Club",
+        "Azle", "Lake Worth", "White Settlement", "Forest Hill",
+        "Everman", "Crowley", "Midlothian", "Alvarado", "Cleburne",
+        "Joshua", "Granbury", "Weatherford", "Mineral Wells",
+        "Stephenville", "Hillsboro", "Ennis", "Corsicana",
+        "Terrell", "Kaufman", "Canton", "Gunter", "Denison",
+        "Sherman", "Gainesville", "Decatur", "Greenville", "Sulphur Springs",
+        "Mount Pleasant", "Paris", "Bonham",
+
+        # ── Houston Metro ─────────────────────────────────────────────────────
         "Pasadena", "Pearland", "League City", "Sugar Land", "Baytown",
         "Missouri City", "Conroe", "Spring", "The Woodlands", "Katy",
         "Humble", "Atascocita", "Cypress", "Friendswood", "Stafford",
         "Rosenberg", "Galveston", "Texas City", "La Porte", "Deer Park",
-        "Channelview", "Kingwood", "Tomball", "Porter",
-        # Austin Metro
+        "Channelview", "Kingwood", "Tomball", "Porter", "Magnolia",
+        "Montgomery", "Alvin", "Angleton", "Lake Jackson", "Clute",
+        "Freeport", "El Campo", "Wharton", "Bay City", "Brenham",
+        "Navasota", "Huntsville", "Livingston", "Cleveland", "Dayton",
+        "Liberty", "La Marque", "South Houston", "Galena Park",
+
+        # ── Austin Metro ──────────────────────────────────────────────────────
         "Round Rock", "Cedar Park", "Pflugerville", "Georgetown",
         "San Marcos", "Kyle", "Buda", "Leander", "Hutto", "Lakeway",
-        "Cedar Park", "Bastrop", "Lockhart",
-        # San Antonio Metro
+        "Bastrop", "Lockhart", "Taylor", "Elgin", "Marble Falls",
+        "Burnet", "Wimberley", "Dripping Springs", "Bee Cave",
+        "Luling", "Seguin",
+
+        # ── San Antonio Metro ─────────────────────────────────────────────────
         "New Braunfels", "Schertz", "Converse", "Universal City",
-        "Live Oak", "Leon Valley", "Helotes",
-        # Other major Texas cities
-        "Corpus Christi", "Lubbock", "Laredo", "Amarillo", "Brownsville",
-        "Killeen", "McAllen", "Waco", "Midland", "Odessa", "Abilene",
-        "Beaumont", "Tyler", "Edinburg", "College Station", "San Angelo",
-        "Wichita Falls", "Longview", "Harlingen", "Temple", "Bryan",
-        "Mission", "Pharr", "Port Arthur", "Victoria", "Texarkana",
-        "Abilene", "Lufkin", "Nacogdoches", "Sherman", "Wichita Falls",
-        "Greenville", "Marshall", "Big Spring", "Kerrville", "San Marcos",
-        "Del Rio", "Eagle Pass", "Laredo", "McAllen",
+        "Live Oak", "Leon Valley", "Helotes", "Boerne", "Bulverde",
+        "Pleasanton", "Floresville", "Hondo", "Castroville",
+        "Fredericksburg", "Kerrville", "Comfort", "Pearsall",
+
+        # ── Corpus Christi / Coastal Bend ────────────────────────────────────
+        "Corpus Christi", "Portland", "Aransas Pass", "Rockport",
+        "Sinton", "Robstown", "Calallen",
+
+        # ── Rio Grande Valley ─────────────────────────────────────────────────
+        "McAllen", "Edinburg", "Mission", "Pharr", "Harlingen",
+        "Brownsville", "Weslaco", "San Benito", "Donna", "Alton",
+        "Palmview", "San Juan", "Hidalgo", "Mercedes", "La Feria",
+        "Rio Grande City", "Roma", "Zapata",
+
+        # ── Laredo / South Texas ──────────────────────────────────────────────
+        "Laredo", "Eagle Pass", "Del Rio", "Uvalde", "Cotulla",
+        "Crystal City", "Carrizo Springs", "Dilley",
+
+        # ── Coastal / Victoria area ───────────────────────────────────────────
+        "Victoria", "Port Lavaca", "Cuero", "Yoakum", "Gonzales",
+        "Beeville", "Alice", "Kingsville",
+
+        # ── Central Texas ─────────────────────────────────────────────────────
+        "Waco", "Temple", "Killeen", "Bryan", "College Station",
+        "Belton", "Copperas Cove", "Harker Heights", "Lampasas",
+        "Gatesville", "Mexia", "Palestine", "Athens",
+        "Jacksonville",
+        "Brownwood", "Cisco", "Breckenridge",
+
+        # ── East Texas ────────────────────────────────────────────────────────
+        "Tyler", "Longview", "Texarkana", "Marshall", "Kilgore",
+        "Gladewater", "Henderson", "Carthage", "Center",
+        "Nacogdoches", "Lufkin", "Jasper", "Woodville",
+        "Diboll", "Rusk", "Crockett",
+        "Orange", "Port Arthur", "Beaumont",
+        "Lumberton", "Nederland", "Port Neches", "Groves", "Vidor",
+        "Silsbee",
+
+        # ── North Texas ───────────────────────────────────────────────────────
+        "Wichita Falls", "Vernon", "Graham", "Jacksboro",
+        "Bowie", "Henrietta", "Burkburnett",
+
+        # ── West Texas ────────────────────────────────────────────────────────
+        "Midland", "Odessa", "San Angelo", "Abilene", "Big Spring",
+        "Snyder", "Colorado City", "Sweetwater",
+        "Monahans", "Pecos", "Fort Stockton", "Alpine", "Marfa",
+        "Van Horn", "Ozona", "Sonora", "Junction",
+        "Llano", "Mason", "Andrews", "Seminole", "Kermit",
+        "Lamesa", "Plainview",
+
+        # ── Panhandle / South Plains ──────────────────────────────────────────
+        "Amarillo", "Canyon", "Hereford", "Pampa", "Borger",
+        "Lubbock", "Levelland", "Brownfield", "Post",
+        "Floydada", "Lockney", "Littlefield", "Muleshoe",
+        "Dumas", "Dalhart", "Stratford", "Perryton",
+        "Spearman", "Canadian", "Clarendon", "Childress",
+        "Memphis", "Wellington", "Shamrock", "Tulia",
     ],
 }
 
