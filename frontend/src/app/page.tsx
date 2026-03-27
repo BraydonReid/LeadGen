@@ -1,3 +1,5 @@
+export const revalidate = 300; // re-fetch stats every 5 minutes
+
 import ComparisonTable from "@/components/home/ComparisonTable";
 import ConsumerPortalCTA from "@/components/home/ConsumerPortalCTA";
 import CsvPreview from "@/components/home/CsvPreview";
