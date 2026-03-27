@@ -13,13 +13,13 @@ Uses Resend (already configured). Tracks sent emails in subscriber_emails_sent
 to prevent duplicate sends across scheduler runs.
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.models import Subscription, SubscriberEmailSent, SubscriptionDownload
+from app.models import Lead, Subscription, SubscriberEmailSent, SubscriptionDownload
 from app.services.email_sender import send_email
 
 logger = logging.getLogger(__name__)
@@ -253,6 +253,74 @@ async def send_expiry_warning(
     return bool(msg_id)
 
 
+async def send_weekly_digest(email: str, db: AsyncSession) -> bool:
+    """
+    Monday morning digest: top 3 industries with the most new leads added this week.
+    Uses period key 'weekly_YYYY_WXX' to send at most once per calendar week.
+    """
+    now = datetime.utcnow()
+    week_key = f"weekly_{now.strftime('%Y_W%U')}"
+    if await _already_sent(email, week_key, db):
+        return False
+
+    cutoff = now - timedelta(days=7)
+    rows = (await db.execute(
+        select(Lead.industry, func.count().label("cnt"))
+        .where(
+            Lead.scraped_date >= cutoff,
+            Lead.duplicate_of_id.is_(None),
+            Lead.lead_type == "business",
+        )
+        .group_by(Lead.industry)
+        .order_by(func.count().desc())
+        .limit(3)
+    )).all()
+
+    if not rows:
+        return False
+
+    portal_url = f"{FRONTEND_URL}/my-subscription"
+    industry_rows = "".join(
+        f"""<tr>
+              <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+                <strong>{r.industry.title()}</strong>
+              </td>
+              <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;text-align:right;color:#2563eb;font-weight:bold;">
+                +{r.cnt:,} new leads
+              </td>
+            </tr>"""
+        for r in rows
+    )
+    total_new = sum(r.cnt for r in rows)
+    top_industry = rows[0].industry.title()
+    subject = f"{total_new:,} new leads added this week — {top_industry} leads + more"
+
+    body = _base(f"""
+  <h2 style="color:#1e293b;margin-top:0;">Fresh leads added this week</h2>
+  <p>Here's what was added to the database in the last 7 days:</p>
+  <table style="width:100%;border-collapse:collapse;">
+    {industry_rows}
+  </table>
+  <p style="margin-top:16px;color:#64748b;font-size:13px;">
+    All leads are sorted by AI conversion score so you always get the best ones first.
+  </p>
+  <p style="margin:24px 0;">
+    <a href="{portal_url}"
+       style="background:#2563eb;color:white;padding:12px 24px;text-decoration:none;
+              border-radius:8px;font-weight:bold;display:inline-block;">
+      Download This Week's Leads →
+    </a>
+  </p>
+  <p>— The Take Your Lead Today Team</p>
+""")
+
+    msg_id = await send_email(email, subject, body)
+    if msg_id:
+        await _mark_sent(email, week_key, db)
+        logger.info(f"[mailer] Weekly digest sent → {email} ({total_new} new leads)")
+    return bool(msg_id)
+
+
 # ── Main scheduler job ─────────────────────────────────────────────────────────
 
 async def run_subscriber_email_job(db: AsyncSession) -> dict:
@@ -270,7 +338,8 @@ async def run_subscriber_email_job(db: AsyncSession) -> dict:
     subs = result.scalars().all()
 
     sent = {"welcome": 0, "tips_day3": 0, "checkin_day7": 0,
-            "low_credits": 0, "expiry_warning": 0}
+            "low_credits": 0, "expiry_warning": 0, "weekly_digest": 0}
+    is_monday = now.weekday() == 0
 
     for sub in subs:
         email = sub.buyer_email
@@ -309,6 +378,11 @@ async def run_subscriber_email_job(db: AsyncSession) -> dict:
             if 4 <= days_until_reset <= 6:
                 if await send_expiry_warning(email, sub.credits_remaining, sub.current_period_end, db):
                     sent["expiry_warning"] += 1
+
+        # Weekly digest — every Monday, shows top industries with new leads
+        if is_monday and age_days >= 7:
+            if await send_weekly_digest(email, db):
+                sent["weekly_digest"] += 1
 
     total = sum(sent.values())
     if total:

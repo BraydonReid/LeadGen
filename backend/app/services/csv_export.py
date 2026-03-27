@@ -13,6 +13,7 @@ def generate_csv(leads: list[Lead]) -> Generator[str, None, None]:
     writer.writerow([
         "business_name", "contact_name", "contact_title", "city", "state", "zip_code",
         "full_address", "email", "phone", "website", "linkedin_url",
+        "facebook_page", "instagram",
         "lead_type", "quality_score", "ai_conversion_score",
         "yelp_rating", "review_count", "years_in_business", "date_added",
     ])
@@ -34,6 +35,8 @@ def generate_csv(leads: list[Lead]) -> Generator[str, None, None]:
             lead.phone or "",
             lead.website or "",
             getattr(lead, "linkedin_url", "") or "",
+            getattr(lead, "facebook_url", "") or "",
+            getattr(lead, "instagram_url", "") or "",
             getattr(lead, "lead_type", "business") or "business",
             getattr(lead, "quality_score", "") if getattr(lead, "quality_score", None) is not None else "",
             getattr(lead, "conversion_score", "") if getattr(lead, "conversion_score", None) is not None else "",

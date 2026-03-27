@@ -53,6 +53,10 @@ class Lead(Base):
     whois_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     ddg_search_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     nominatim_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Social media links — extracted from lead website footer
+    facebook_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    instagram_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    social_scrape_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Purchase(Base):
