@@ -57,6 +57,12 @@ class Lead(Base):
     facebook_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     instagram_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     social_scrape_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # NPI (National Provider Identifier) — free government API for healthcare leads
+    npi_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    npi_attempted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # BBB rating + accreditation (populated at scrape time for BBB-sourced leads)
+    bbb_rating: Mapped[str | None] = mapped_column(String(5), nullable=True)
+    bbb_accredited: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
 
 class Purchase(Base):

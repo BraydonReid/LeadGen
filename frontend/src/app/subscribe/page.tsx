@@ -35,6 +35,23 @@ const PLANS = [
       "Cancel anytime",
     ],
   },
+  {
+    key: "agency",
+    name: "Agency",
+    price: "$299",
+    leads: 1000,
+    perLead: "~$0.30/lead",
+    badge: "Best Value",
+    features: [
+      "1,000 fresh leads every month",
+      "Any industry + any state",
+      "Advanced Yelp & freshness filters",
+      "AI conversion scores on all leads",
+      "Facebook & Instagram links included",
+      "Instant CSV download, any time",
+      "Cancel anytime",
+    ],
+  },
 ];
 
 function SubscribeInner() {
@@ -42,7 +59,9 @@ function SubscribeInner() {
   const referralCode = searchParams.get("ref");
   const planParam = searchParams.get("plan");
   const [email, setEmail] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState(planParam === "starter" ? "starter" : "pro");
+  const [selectedPlan, setSelectedPlan] = useState(
+    planParam === "starter" ? "starter" : planParam === "agency" ? "agency" : "pro"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,7 +96,7 @@ function SubscribeInner() {
         </div>
 
         {/* Plan selector */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {PLANS.map((plan) => (
             <button
               key={plan.key}
@@ -92,6 +111,11 @@ function SubscribeInner() {
               {plan.popular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                   Most Popular
+                </span>
+              )}
+              {"badge" in plan && plan.badge && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                  {plan.badge}
                 </span>
               )}
               <div className="flex items-center gap-2 mb-3">

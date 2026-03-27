@@ -58,6 +58,12 @@ PLANS = {
         "name": "Lead Credits — Pro",
         "description": "300 fresh leads every month. Any industry, any state. Cancel anytime.",
     },
+    "agency": {
+        "price_cents": 29900,
+        "leads": 1000,
+        "name": "Lead Credits — Agency",
+        "description": "1,000 fresh leads every month. Any industry, any state. Cancel anytime.",
+    },
 }
 
 MAGIC_LINK_TTL_MINUTES = 20

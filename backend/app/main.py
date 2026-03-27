@@ -162,6 +162,15 @@ async def _run_social_scrape_job():
             logger.info(f"[scheduler] Social scraper found {found} leads with social links")
 
 
+async def _run_npi_job():
+    """APScheduler job: NPI Registry enrichment for healthcare leads every 30 minutes."""
+    from app.services.npi_enricher import npi_enrich_batch
+    async with AsyncSessionLocal() as db:
+        found = await npi_enrich_batch(db)
+        if found > 0:
+            logger.info(f"[scheduler] NPI enrichment found {found} healthcare leads")
+
+
 async def _run_email_send_job():
     """APScheduler job: send pending campaign emails every 15 minutes."""
     from app.config import settings
@@ -193,6 +202,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(_run_ddg_search_job, "interval", minutes=20, id="ddg_search")
     scheduler.add_job(_run_nominatim_job, "interval", minutes=15, id="nominatim_enrichment")
     scheduler.add_job(_run_social_scrape_job, "interval", minutes=30, id="social_scraper")
+    scheduler.add_job(_run_npi_job, "interval", minutes=30, id="npi_enrichment")
     scheduler.start()
     logger.info("[scheduler] APScheduler started — scoring/enrichment/campaigns active")
     yield

@@ -52,6 +52,26 @@ const SUBSCRIPTION_PLANS = [
     color: "border-blue-500",
     badge: "Most Popular",
   },
+  {
+    name: "Agency",
+    price: "$299",
+    period: "/month",
+    leads: "1,000 leads/month",
+    perLead: "~$0.30/lead",
+    features: [
+      "1,000 fresh leads every month",
+      "Any industry + any state",
+      "Advanced filters (Yelp, freshness, quality)",
+      "AI conversion scores on all leads",
+      "Facebook & Instagram links included",
+      "Instant CSV download, any time",
+      "Cancel anytime",
+    ],
+    cta: "Subscribe — Agency",
+    ctaHref: "/subscribe?plan=agency",
+    color: "border-violet-500",
+    badge: "Best Value",
+  },
 ];
 
 export default function PricingPage() {
@@ -121,7 +141,7 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto mb-10">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mb-10">
             {SUBSCRIPTION_PLANS.map((plan) => (
               <div
                 key={plan.name}

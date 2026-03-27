@@ -309,7 +309,7 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
           </div>
           <span className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-sm font-bold px-3 py-1.5 rounded-full">
             <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-            Active — {(sub.plan as string) === "starter" ? "Starter" : "Pro"} Plan
+            Active — {(sub.plan as string) === "starter" ? "Starter" : (sub.plan as string) === "agency" ? "Agency" : "Pro"} Plan
           </span>
         </div>
 
@@ -475,7 +475,7 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
           </div>
         )}
 
-        {/* Upgrade prompt for Starter */}
+        {/* Upgrade prompt for Starter → Pro */}
         {(sub.plan as string) === "starter" && (
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
@@ -484,6 +484,20 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
             </div>
             <a href="/subscribe?plan=pro"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap">
+              Upgrade →
+            </a>
+          </div>
+        )}
+
+        {/* Upgrade prompt for Pro → Agency */}
+        {(sub.plan as string) === "pro" && (
+          <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <div className="font-bold text-slate-900 text-sm">Upgrade to Agency</div>
+              <div className="text-slate-500 text-xs mt-0.5">Get 1,000 leads/month instead of 300 — $299/mo (~$0.30/lead)</div>
+            </div>
+            <a href="/subscribe?plan=agency"
+              className="bg-violet-600 hover:bg-violet-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap">
               Upgrade →
             </a>
           </div>

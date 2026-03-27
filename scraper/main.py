@@ -601,6 +601,8 @@ def run_scrape():
                     yelp_rating=s.yelp_rating,
                     review_count=s.review_count,
                     years_in_business=s.years_in_business,
+                    bbb_rating=s.bbb_rating,
+                    bbb_accredited=s.bbb_accredited,
                 )
                 session.add(lead)
                 new_count += 1

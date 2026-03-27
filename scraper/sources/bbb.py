@@ -223,6 +223,26 @@ def _parse_card(card, industry: str, search_city: str, state: str) -> ScrapedLea
                 contact_name = name_part
                 break
 
+    # BBB Rating grade (A+, A, A-, B+, B, etc.)
+    bbb_rating = None
+    rating_el = card.select_one(
+        "[class*='Rating'] [class*='grade'], [class*='rating-grade'], "
+        "[class*='RatingLetter'], span[class*='grade'], [data-testid*='rating']"
+    )
+    if rating_el:
+        raw_rating = rating_el.get_text(strip=True)
+        if re.match(r"^[A-F][+-]?$", raw_rating):
+            bbb_rating = raw_rating
+
+    # BBB Accreditation badge
+    bbb_accredited = None
+    accredited_el = card.select_one(
+        "[class*='accredited' i], [class*='Accredited'], "
+        "img[alt*='Accredited' i], [data-testid*='accredited' i]"
+    )
+    if accredited_el:
+        bbb_accredited = True
+
     return ScrapedLead(
         business_name=business_name,
         industry=industry.lower(),
@@ -236,4 +256,6 @@ def _parse_card(card, industry: str, search_city: str, state: str) -> ScrapedLea
         contact_name=contact_name,
         source="bbb",
         lead_type="business",
+        bbb_rating=bbb_rating,
+        bbb_accredited=bbb_accredited,
     )

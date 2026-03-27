@@ -21,6 +21,9 @@ class ScrapedLead:
     yelp_rating: float | None = None      # 0.0–5.0 star rating
     review_count: int | None = None       # total number of reviews
     years_in_business: int | None = None  # calculated from founding year
+    # BBB-specific signals
+    bbb_rating: str | None = None         # A+, A, B, C, F
+    bbb_accredited: bool | None = None    # True if BBB-accredited business
 
 
 class BaseScraper(ABC):
