@@ -65,6 +65,8 @@ class Lead(Base):
     bbb_accredited: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     # Email verification — True when SMTP RCPT TO confirms mailbox exists
     email_verified: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    # Soft archive — True when lead hasn't been re-scraped in 365 days (hidden from customers but kept in DB)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
 
 
 class Purchase(Base):
@@ -110,6 +112,10 @@ class SampleRequest(Base):
     industry: Mapped[str] = mapped_column(String(100), nullable=False)
     state: Mapped[str] = mapped_column(String(10), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # Email nurture sequence — tracks which follow-up emails have been sent
+    nurture_stage: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    nurture_last_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    nurture_unsubscribed: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
 
     __table_args__ = (
         UniqueConstraint("email", "industry", "state", name="uq_sample_email_industry_state"),

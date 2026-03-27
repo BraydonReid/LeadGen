@@ -330,6 +330,10 @@ class BuildingPermitScraper(BaseScraper):
                     # Use address + name as dedup key
                     dedup_key = f"permit:{state}:{re.sub(r'[^a-z0-9]', '', full_address.lower()[:60])}"
 
+                    # Demolition permits get a review_count boost so quality_score reflects
+                    # their "extreme intent" status (demo permit = rebuild is imminent)
+                    is_demolition = mapped == "demolition"
+
                     leads.append(ScrapedLead(
                         business_name=address,  # property address — more useful for contractors than homeowner name
                         industry=mapped,
@@ -344,6 +348,8 @@ class BuildingPermitScraper(BaseScraper):
                         source="building_permits",
                         lead_type="consumer",  # THIS IS THE KEY — consumer intent
                         years_in_business=days_old,  # repurposed: days since permit issued
+                        # Demolition permits: boost review_count so quality_score treats them as top-tier
+                        review_count=500 if is_demolition else None,
                     ))
 
                 pages_scanned += 1

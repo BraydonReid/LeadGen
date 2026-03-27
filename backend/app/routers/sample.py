@@ -18,7 +18,7 @@ from app.schemas import SampleRequestSchema
 from app.services.csv_export import generate_csv
 from app.services.geo import get_cities_in_radius, get_zip_info
 
-FRESHNESS_DAYS = 180
+FRESHNESS_DAYS = 365
 SAMPLE_SIZE = 5
 
 router = APIRouter()

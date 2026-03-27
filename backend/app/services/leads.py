@@ -7,7 +7,7 @@ from app.models import Lead
 from app.schemas import LeadPreview, SearchQuery, SearchResponse
 from app.services.geo import get_cities_in_radius, get_zip_info
 
-FRESHNESS_DAYS = 180
+FRESHNESS_DAYS = 365
 
 
 def _now():
@@ -29,6 +29,7 @@ async def search_leads(
         Lead.state == state_upper,
         Lead.scraped_date >= freshness_cutoff,
         Lead.duplicate_of_id.is_(None),
+        Lead.archived == False,  # noqa: E712
     ]
     if city:
         filters.append(func.lower(Lead.city).contains(city.strip().lower()))
@@ -86,6 +87,7 @@ async def get_leads_for_download(
         Lead.times_sold < 5,
         Lead.scraped_date >= freshness_cutoff,
         Lead.duplicate_of_id.is_(None),
+        Lead.archived == False,  # noqa: E712
     ]
     if resolved_state:
         filters.append(Lead.state == resolved_state.strip().upper())

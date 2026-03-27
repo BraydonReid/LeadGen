@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import Script from "next/script";
 import UTMCapture from "@/components/UTMCapture";
 import "./globals.css";
+
+const GA4_ID = process.env.NEXT_PUBLIC_GA4_ID;
 
 export const metadata: Metadata = {
   title: "Take Your Lead Today — Contractor & Business Leads",
@@ -21,6 +24,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      {GA4_ID && (
+        <>
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="afterInteractive" />
+          <Script id="ga4-init" strategy="afterInteractive">{`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA4_ID}');
+          `}</Script>
+        </>
+      )}
       <body className="bg-white text-slate-900 min-h-screen flex flex-col">
         <header className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -38,10 +52,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
               <Link href="/shop" className="hover:text-blue-600 transition-colors">Shop</Link>
               <Link href="/leads" className="hover:text-blue-600 transition-colors">Browse by Industry</Link>
+              <Link href="/intent-leads" className="hover:text-orange-600 transition-colors">Intent Leads</Link>
               <Link href="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link>
+              <Link href="/bulk" className="hover:text-blue-600 transition-colors">Bulk Orders</Link>
               <Link href="/my-subscription" className="hover:text-blue-600 transition-colors">My Subscription</Link>
-              <a href="/#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</a>
-              <Link href="/list-your-business" className="hover:text-blue-600 transition-colors">List Your Business</Link>
               <Link href="/request-service" className="hover:text-teal-600 transition-colors">Get Free Quotes</Link>
             </nav>
 
@@ -71,6 +85,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="text-white font-semibold text-sm mb-4">Product</div>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/shop" className="hover:text-white transition-colors">Browse Texas Leads</Link></li>
+                <li><Link href="/intent-leads" className="hover:text-white transition-colors">Consumer Intent Leads</Link></li>
+                <li><Link href="/bulk" className="hover:text-white transition-colors">Bulk Orders (5,000+)</Link></li>
                 <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
                 <li><Link href="/subscribe" className="hover:text-white transition-colors">Subscribe — $99/month</Link></li>
                 <li><Link href="/my-subscription" className="hover:text-white transition-colors">My Subscription</Link></li>

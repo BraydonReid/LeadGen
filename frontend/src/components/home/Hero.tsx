@@ -22,7 +22,7 @@ export default function Hero({ totalLeads, consumerIntentCount }: { totalLeads: 
           <p className="text-lg lg:text-xl text-slate-300 mb-10 leading-relaxed">
             <strong className="text-white">{formatted} verified contractor &amp; business leads</strong> across
             93 industries and 34 states —{" "}
-            <span className="text-emerald-400 font-semibold">all scraped within the last 30 days</span>.
+            <span className="text-emerald-400 font-semibold">continuously scraped, all data within 12 months</span>.
             Phone-verified, sorted by AI conversion score. Download as CSV instantly.
             Starting at just <strong className="text-emerald-400">$0.10 per lead</strong>.
           </p>

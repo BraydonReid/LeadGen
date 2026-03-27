@@ -11,6 +11,7 @@ from app.routers import (
     ai_search,
     ai_tasks,
     api_access,
+    bulk_quote,
     checkout,
     download,
     email_campaigns,
@@ -80,6 +81,15 @@ async def _run_dedup_job():
         result = await run_dedup_pass(db, batch_size=500)
         if result["marked_this_run"] > 0:
             logger.info(f"[scheduler] Dedup: marked {result['marked_this_run']} duplicates")
+
+
+async def _run_nurture_job():
+    """APScheduler job: send nurture emails to free-sample downloaders every 6 hours."""
+    from app.services.email_nurture import run_nurture_batch
+    async with AsyncSessionLocal() as db:
+        sent = await run_nurture_batch(db)
+        if sent > 0:
+            logger.info(f"[scheduler] Nurture emails sent: {sent}")
 
 
 async def _run_subscriber_email_job():
@@ -188,6 +198,7 @@ async def _run_email_send_job():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.add_job(_run_scoring_job, "interval", minutes=10, id="ai_scoring")
+    scheduler.add_job(_run_nurture_job, "interval", hours=6, id="email_nurture")
     scheduler.add_job(_run_enrichment_job, "interval", hours=1, id="email_enrichment")
     scheduler.add_job(_run_website_scrape_job, "interval", minutes=20, id="website_scraper")
     # Email campaigns disabled — enable when ready to launch outbound emails
@@ -237,6 +248,7 @@ app.include_router(orders.router, prefix="/api")
 app.include_router(subscriptions.router, prefix="/api")
 app.include_router(api_access.router, prefix="/api")
 app.include_router(industry_requests.router, prefix="/api")
+app.include_router(bulk_quote.router, prefix="/api")
 
 
 @app.get("/health")

@@ -43,10 +43,20 @@ from sources.bbb import BBBScraper
 from sources.building_permits import BuildingPermitScraper
 from sources.city_open_data import CityOpenDataScraper
 from sources.ckan_permits import CKANPermitScraper
+from sources.code_violations import CodeViolationScraper
+from sources.deed_transfers import DeedTransferScraper
 from sources.manta import MantaScraper
 from sources.superpages import SuperpagesScraper
 from sources.tdlr import TDLRScraper
+from sources.texas_sos_new_filings import TexasSOSScraper
 from sources.yellowpages import YellowPagesScraper
+
+# New intent scrapers — Texas-specific standalone scripts.
+# Run these daily in addition to the main scraper loop:
+#   python sources/texas_sos_new_filings.py --days 7
+#   python sources/code_violations.py --days 30
+#   python sources/deed_transfers.py --days 60
+# They are also included in the scraper pool below (low weight — Texas cities only).
 
 # Optional API sources — loaded only if keys are present
 _yelp_scraper = None
@@ -481,6 +491,9 @@ _ARCGIS_CITIES_LOWER = {city for city, _ in _ARCGIS_CFG}
 _permit_scraper_socrata = BuildingPermitScraper()
 _permit_scraper_ckan = CKANPermitScraper()
 _permit_scraper_arcgis = ArcGISPermitScraper()
+_code_violation_scraper = CodeViolationScraper()
+_deed_transfer_scraper = DeedTransferScraper()
+_tx_sos_scraper = TexasSOSScraper()
 
 
 def _build_scraper_pool() -> list[tuple]:
@@ -499,6 +512,9 @@ def _build_scraper_pool() -> list[tuple]:
         # based on which city is chosen, routing to Socrata/CKAN/ArcGIS as needed.
         (None, "building_permits"),
         (None, "building_permits"),  # double weight → ~22% of slots = consumer leads
+        # New intent sources — TX only, handled via special routing block in run_scrape()
+        (None, "code_violations"),   # Dallas/Houston/Austin code enforcement
+        (None, "deed_transfers"),    # new homeowner deed transfers
     ]
     if _yelp_scraper:
         pool.append((_yelp_scraper, "yelp"))
@@ -542,6 +558,18 @@ def run_scrape():
                     scraper_obj = _permit_scraper_arcgis
                 else:
                     scraper_obj = _permit_scraper_socrata  # fallback
+
+            # New intent scrapers — redirect to a supported TX city
+            _TX_INTENT_CITIES = ["Dallas", "Houston", "Austin"]
+            if source_name == "code_violations":
+                if state != "TX" or city not in _TX_INTENT_CITIES:
+                    city, state = random.choice([("Dallas", "TX"), ("Houston", "TX"), ("Austin", "TX")])
+                scraper_obj = _code_violation_scraper
+
+            if source_name == "deed_transfers":
+                if state != "TX":
+                    city, state = random.choice([("Houston", "TX"), ("Dallas", "TX"), ("Austin", "TX")])
+                scraper_obj = _deed_transfer_scraper
 
             # For Yelp: check budget and whether this combo is worth a Yelp call
             if source_name == "yelp":
