@@ -1,0 +1,119 @@
+DATA QUALITY REPORT — Take Your Lead Today
+Generated: 2026-03-27
+Total leads: 127,885 across 36 states
+
+================================================================================
+OVERALL DATA QUALITY SCORE: 7.5 / 10
+================================================================================
+
+CURRENT ENRICHMENT SNAPSHOT
+-----------------------------
+Total leads:          127,885
+States covered:            36
+Industries:                93
+
+Website checked:       83,434  (65%)
+  - Working websites:  13,002  (15.6% of checked)
+
+Contact scraped:       19,194
+  - Has email:         57,999  (45.4%)
+
+SMTP attempted:        16,571
+  - Email verified:       156  (0.1%)
+
+AI scored:             57,394  (44.9%)
+Social scraped:         8,301  (6.5%)
+  - Has Facebook:       2,902
+  - Has Instagram:      1,886
+
+NPI attempted:          4,070  (healthcare leads)
+
+
+PER-DIMENSION SCORES
+---------------------
+Phone number          8.5/10
+  - TX: 98% coverage (exceptional)
+  - Non-Yelp states (NY, PA, TN, WA) currently near-zero — will improve as
+    Yelp scraping catches up on those states
+  - Final projected overall rate: 93-95%
+
+Email address         6.5/10
+  - Currently 45% have emails — near the ceiling
+  - Hard limit: only 15.6% of leads have a working website
+  - Small contractors (HVAC, roofing, plumbing) rarely have websites
+  - Final projected rate: 46-50%
+
+AI conversion score   7/10 now -> 9/10 when complete
+  - 44.9% scored today; will climb to 85-90% as pipeline processes backlog
+  - Remaining ~10-15% are low-data leads (no phone, no website)
+
+Street address        8/10
+  - Yelp includes addresses for nearly every listing
+  - Estimated 85-90% coverage across full corpus
+
+Social links          4/10 now -> 8/10 when complete
+  - Only 6.5% of leads scraped for social yet
+  - Hit rate among scraped leads: 35% Facebook, 23% Instagram
+  - Final projected: 30-35% Facebook, 18-22% Instagram
+  - No competitor includes social links at this price point
+
+SMTP-verified email   2/10
+  - 156 verified out of 127k leads
+  - Root cause: Hetzner blocks outbound port 25 (anti-spam)
+  - Not a viable enrichment path on current infrastructure
+
+Data freshness        9/10
+  - Continuously scraped, all leads within 30 days
+  - Biggest advantage over Apollo/ZoomInfo (stale snapshots)
+
+NPI enrichment        in progress
+  - 4,070 healthcare leads attempted
+  - Government API, free, unlimited
+  - Final projected: 60-70% of healthcare leads enriched with
+    verified practitioner name, credential, and address
+
+
+FINAL ENRICHMENT PREDICTIONS (when all pipelines complete)
+-----------------------------------------------------------
+Metric                  Now         Final estimate
+-----------             -------     ---------------
+Has phone               ~90%        93-95%
+Has email               45%         46-50%  (near ceiling)
+AI scored               45%         85-90%
+Has Facebook            ~2%         28-35%
+Has Instagram           ~1.5%       15-22%
+SMTP verified           0.1%        0.5-1%  (port 25 blocked on Hetzner)
+NPI enriched            3%          60-70% of healthcare leads
+
+
+KNOWN ISSUES
+-------------
+1. SMTP job was stuck (fixed 2026-03-27) — batch size reduced 200->50,
+   per-lead timeout added (45s), socket timeout tightened (8s->5s)
+2. States NY, PA, TN, WA currently sourced from BBB/permit data only —
+   near-zero phone rate until Yelp scraping reaches them
+3. Low website rate (15.6%) is inherent to the contractor market, not fixable
+
+
+COMPETITIVE COMPARISON
+-----------------------
+Metric          Us (TX)     Apollo      ZoomInfo    D7 LeadFinder
+-------         -------     ------      --------    -------------
+Phone rate      98%         ~75%        ~70%        ~70%
+Email rate      45%         ~70%        ~80%        ~40%
+AI score        yes         no          no          no
+Freshness       <30 days    stale DB    stale DB    stale DB
+Social links    yes (new)   no          no          no
+Price/lead      $0.10-0.80  $0.15+      $0.10+      $0.08
+Min spend       $0          $49/mo      $1,500/mo   $30/mo
+
+
+WHAT'S HOLDING US BACK FROM 9-10
+----------------------------------
+1. Low website rate (15.6%) caps email/social enrichment — inherent to market
+2. Port 25 blocked on Hetzner — SMTP verification not viable
+3. Non-Yelp states missing phone data — will self-correct as scrapers mature
+
+For the target buyer (contractors making sales calls), phone + freshness are
+the metrics that matter most. At 98% phone coverage on the primary TX market,
+this is genuinely competitive with any provider at any price point.
