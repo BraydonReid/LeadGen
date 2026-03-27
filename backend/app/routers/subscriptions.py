@@ -51,18 +51,43 @@ PLANS = {
         "leads": 50,
         "name": "Lead Credits — Starter",
         "description": "50 fresh leads every month. Any industry, any state. Cancel anytime.",
+        "interval": "month",
     },
     "pro": {
         "price_cents": 9999,
         "leads": 300,
         "name": "Lead Credits — Pro",
         "description": "300 fresh leads every month. Any industry, any state. Cancel anytime.",
+        "interval": "month",
     },
     "agency": {
         "price_cents": 29900,
         "leads": 1000,
         "name": "Lead Credits — Agency",
         "description": "1,000 fresh leads every month. Any industry, any state. Cancel anytime.",
+        "interval": "month",
+    },
+    # Annual plans — same monthly credits, billed once per year (~2 months free)
+    "starter_annual": {
+        "price_cents": 29900,
+        "leads": 50,
+        "name": "Lead Credits — Starter (Annual)",
+        "description": "50 fresh leads every month. Billed annually — 2 months free.",
+        "interval": "year",
+    },
+    "pro_annual": {
+        "price_cents": 99900,
+        "leads": 300,
+        "name": "Lead Credits — Pro (Annual)",
+        "description": "300 fresh leads every month. Billed annually — 2 months free.",
+        "interval": "year",
+    },
+    "agency_annual": {
+        "price_cents": 299000,
+        "leads": 1000,
+        "name": "Lead Credits — Agency (Annual)",
+        "description": "1,000 fresh leads every month. Billed annually — 2 months free.",
+        "interval": "year",
     },
 }
 
@@ -195,7 +220,7 @@ async def create_subscription_checkout(body: SubscribeRequest):
                 "price_data": {
                     "currency": "usd",
                     "unit_amount": plan["price_cents"],
-                    "recurring": {"interval": "month"},
+                    "recurring": {"interval": plan.get("interval", "month")},
                     "product_data": {
                         "name": plan["name"],
                         "description": plan["description"],
@@ -235,7 +260,50 @@ async def subscription_status(
         "rollover_credits": sub.rollover_credits,
         "current_period_end": sub.current_period_end.isoformat() if sub.current_period_end else None,
         "created_at": sub.created_at.isoformat(),
+        # Developer API (Pro/Agency only)
+        "api_key": sub.api_key if sub.plan in ("pro", "agency") else None,
+        "webhook_url": sub.webhook_url if sub.plan in ("pro", "agency") else None,
     }
+
+
+# ── API key + Webhook ─────────────────────────────────────────────────────────
+
+@router.post("/subscription/api-key")
+async def generate_api_key(
+    email: str = Depends(require_session),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate or regenerate an API key for Pro/Agency subscribers."""
+    sub = await _get_active_sub(email, db)
+    if not sub:
+        raise HTTPException(status_code=403, detail="No active subscription.")
+    if sub.plan not in ("pro", "agency"):
+        raise HTTPException(status_code=403, detail="API access requires a Pro or Agency plan.")
+    sub.api_key = secrets.token_hex(32)
+    await db.commit()
+    logger.info(f"[api_key] Generated API key for {email}")
+    return {"api_key": sub.api_key}
+
+
+class WebhookRequest(BaseModel):
+    webhook_url: str | None = None
+
+
+@router.patch("/subscription/webhook")
+async def set_webhook(
+    body: WebhookRequest,
+    email: str = Depends(require_session),
+    db: AsyncSession = Depends(get_db),
+):
+    """Set or clear a webhook URL for Pro/Agency subscribers."""
+    sub = await _get_active_sub(email, db)
+    if not sub:
+        raise HTTPException(status_code=403, detail="No active subscription.")
+    if sub.plan not in ("pro", "agency"):
+        raise HTTPException(status_code=403, detail="Webhooks require a Pro or Agency plan.")
+    sub.webhook_url = body.webhook_url
+    await db.commit()
+    return {"webhook_url": sub.webhook_url}
 
 
 # ── Download ──────────────────────────────────────────────────────────────────

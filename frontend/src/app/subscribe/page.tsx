@@ -8,10 +8,14 @@ import { createSubscriptionCheckout } from "@/lib/api";
 const PLANS = [
   {
     key: "starter",
+    annualKey: "starter_annual",
     name: "Starter",
     price: "$29.99",
+    annualPrice: "$299",
+    annualSavings: "$61",
     leads: 50,
     perLead: "~$0.60/lead",
+    annualPerLead: "~$0.50/lead",
     features: [
       "50 fresh leads every month",
       "Any industry + any state",
@@ -21,10 +25,14 @@ const PLANS = [
   },
   {
     key: "pro",
+    annualKey: "pro_annual",
     name: "Pro",
     price: "$99.99",
+    annualPrice: "$999",
+    annualSavings: "$201",
     leads: 300,
     perLead: "~$0.33/lead",
+    annualPerLead: "~$0.28/lead",
     popular: true,
     features: [
       "300 fresh leads every month",
@@ -37,10 +45,14 @@ const PLANS = [
   },
   {
     key: "agency",
+    annualKey: "agency_annual",
     name: "Agency",
     price: "$299",
+    annualPrice: "$2,990",
+    annualSavings: "$598",
     leads: 1000,
     perLead: "~$0.30/lead",
+    annualPerLead: "~$0.25/lead",
     badge: "Best Value",
     features: [
       "1,000 fresh leads every month",
@@ -62,6 +74,7 @@ function SubscribeInner() {
   const [selectedPlan, setSelectedPlan] = useState(
     planParam === "starter" ? "starter" : planParam === "agency" ? "agency" : "pro"
   );
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +84,10 @@ function SubscribeInner() {
     if (!email.trim()) return;
     setLoading(true);
     try {
-      const { checkout_url } = await createSubscriptionCheckout(email.trim().toLowerCase(), referralCode ?? undefined, selectedPlan);
+      const planKey = billing === "annual"
+        ? (PLANS.find(p => p.key === selectedPlan)?.annualKey ?? selectedPlan)
+        : selectedPlan;
+      const { checkout_url } = await createSubscriptionCheckout(email.trim().toLowerCase(), referralCode ?? undefined, planKey);
       window.location.href = checkout_url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -93,6 +109,27 @@ function SubscribeInner() {
           <p className="text-slate-500">
             Any industry. Any state. Cancel anytime.
           </p>
+        </div>
+
+        {/* Billing toggle */}
+        <div className="flex items-center justify-center gap-3 mb-5">
+          <button
+            type="button"
+            onClick={() => setBilling("monthly")}
+            className={`text-sm font-semibold px-4 py-2 rounded-xl transition-all ${billing === "monthly" ? "bg-white shadow border border-slate-200 text-blue-600" : "text-slate-400 hover:text-slate-600"}`}
+          >
+            Monthly
+          </button>
+          <button
+            type="button"
+            onClick={() => setBilling("annual")}
+            className={`text-sm font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${billing === "annual" ? "bg-white shadow border border-slate-200 text-blue-600" : "text-slate-400 hover:text-slate-600"}`}
+          >
+            Annual
+            <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">
+              2 months free
+            </span>
+          </button>
         </div>
 
         {/* Plan selector */}
@@ -129,11 +166,18 @@ function SubscribeInner() {
                 <span className="font-bold text-slate-900">{plan.name}</span>
               </div>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl font-black text-slate-900">{plan.price}</span>
-                <span className="text-slate-400 text-sm">/mo</span>
+                <span className="text-3xl font-black text-slate-900">
+                  {billing === "annual" ? plan.annualPrice : plan.price}
+                </span>
+                <span className="text-slate-400 text-sm">{billing === "annual" ? "/yr" : "/mo"}</span>
               </div>
               <div className="text-blue-600 font-semibold text-sm mb-1">{plan.leads} leads/month</div>
-              <div className="text-slate-400 text-xs mb-4">{plan.perLead} · billed monthly</div>
+              <div className="text-slate-400 text-xs mb-1">
+                {billing === "annual" ? plan.annualPerLead : plan.perLead} · billed {billing === "annual" ? "annually" : "monthly"}
+              </div>
+              {billing === "annual" && (
+                <div className="text-emerald-600 text-xs font-semibold mb-3">Save {plan.annualSavings}/year</div>
+              )}
               <ul className="space-y-1.5">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-xs text-slate-600">
@@ -172,7 +216,12 @@ function SubscribeInner() {
             >
               {loading
                 ? "Redirecting to checkout…"
-                : `Subscribe to ${PLANS.find(p => p.key === selectedPlan)?.name} — ${PLANS.find(p => p.key === selectedPlan)?.price}/mo →`}
+                : (() => {
+                    const plan = PLANS.find(p => p.key === selectedPlan);
+                    const price = billing === "annual" ? plan?.annualPrice : plan?.price;
+                    const period = billing === "annual" ? "/yr" : "/mo";
+                    return `Subscribe to ${plan?.name} — ${price}${period} →`;
+                  })()}
             </button>
           </form>
 

@@ -73,6 +73,45 @@ export default async function CityIndustryPage({
   const data = await getPageData(params.industry, params.city);
   const industryTitle = params.industry.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
+  const cityParts0 = params.city.split("-");
+  const state0 = cityParts0.pop()?.toUpperCase() ?? "TX";
+  const cityName0 = cityParts0.join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const jsonLd = data
+    ? {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: `${industryTitle} Leads in ${cityName0}, ${state0}`,
+        description: `${data.count} verified ${industryTitle.toLowerCase()} leads in ${cityName0}, ${state0}`,
+        numberOfItems: data.count,
+        itemListElement: data.sample_leads.slice(0, 5).map((lead, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          item: {
+            "@type": "LocalBusiness",
+            name: lead.business_name,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: lead.city,
+              addressRegion: lead.state,
+              addressCountry: "US",
+            },
+            ...(lead.yelp_rating != null
+              ? {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: lead.yelp_rating,
+                    reviewCount: lead.review_count ?? 1,
+                    bestRating: 5,
+                    worstRating: 1,
+                  },
+                }
+              : {}),
+          },
+        })),
+      }
+    : null;
+
   const cityParts = params.city.split("-");
   const state = cityParts.pop()?.toUpperCase() ?? "TX";
   const cityName = cityParts.join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -96,6 +135,12 @@ export default async function CityIndustryPage({
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       {/* Breadcrumb */}
       <div className="mb-4 text-sm text-slate-500 flex gap-2 flex-wrap">
         <Link href="/leads" className="hover:text-blue-600">All Industries</Link>
@@ -243,6 +288,18 @@ export default async function CityIndustryPage({
             {
               q: "What are consumer intent leads?",
               a: `Consumer intent leads are homeowners who recently pulled a ${industryTitle.toLowerCase()} building permit — meaning they're actively in the market right now. These are the highest-converting leads and are marked with an "Active Permit" tag.`,
+            },
+            {
+              q: "Do the leads include email addresses?",
+              a: "Yes — many leads include verified email addresses discovered via SMTP verification and website scraping. Email coverage varies by industry and city, typically 15–40% of leads. Every lead includes phone number and address.",
+            },
+            {
+              q: "How many times is each lead sold?",
+              a: "We enforce a hard maximum of 5 sales per lead. Once a lead reaches 5 buyers it is permanently retired from the shop. Most competitors sell the same lead to unlimited buyers without disclosing this.",
+            },
+            {
+              q: "What's your bad lead guarantee?",
+              a: "If a lead has a disconnected phone, wrong address, or is otherwise unusable, report it and we'll issue a store credit — no questions asked. Use the Report button in your order confirmation email.",
             },
           ].map((faq) => (
             <details key={faq.q} className="border border-slate-200 rounded-xl p-5 group">

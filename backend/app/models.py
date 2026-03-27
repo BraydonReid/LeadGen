@@ -63,6 +63,8 @@ class Lead(Base):
     # BBB rating + accreditation (populated at scrape time for BBB-sourced leads)
     bbb_rating: Mapped[str | None] = mapped_column(String(5), nullable=True)
     bbb_accredited: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    # Email verification — True when SMTP RCPT TO confirms mailbox exists
+    email_verified: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
 
 class Purchase(Base):
@@ -197,6 +199,9 @@ class Subscription(Base):
     # Referral program
     referral_code: Mapped[str | None] = mapped_column(String(10), unique=True, nullable=True, index=True)
     referred_by_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    # Developer API access (Pro/Agency only)
+    api_key: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
+    webhook_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 class SubscriptionMagicLink(Base):
@@ -233,6 +238,23 @@ class SubscriberEmailSent(Base):
 
     __table_args__ = (
         UniqueConstraint("email", "email_type", name="uq_subscriber_email_type"),
+    )
+
+
+class IndustryRequest(Base):
+    """Demand waitlist — visitors who request an industry we don't have yet."""
+    __tablename__ = "industry_requests"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    industry: Mapped[str] = mapped_column(String(100), nullable=False)
+    state: Mapped[str] = mapped_column(String(2), nullable=False)
+    city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("email", "industry", "state", name="uq_industry_request_email_industry_state"),
     )
 
 

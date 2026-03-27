@@ -20,6 +20,7 @@ const SUBSCRIPTION_PLANS = [
     name: "Starter",
     price: "$29.99",
     period: "/month",
+    annualNote: "$299/yr — save $61",
     leads: "50 leads/month",
     perLead: "~$0.60/lead",
     features: [
@@ -37,6 +38,7 @@ const SUBSCRIPTION_PLANS = [
     name: "Pro",
     price: "$99.99",
     period: "/month",
+    annualNote: "$999/yr — save $201",
     leads: "300 leads/month",
     perLead: "~$0.33/lead",
     features: [
@@ -44,6 +46,7 @@ const SUBSCRIPTION_PLANS = [
       "Any industry + any state",
       "Advanced filters (Yelp, freshness, quality)",
       "AI conversion scores on all leads",
+      "API access (JSON + webhook)",
       "Instant CSV download, any time",
       "Cancel anytime",
     ],
@@ -56,6 +59,7 @@ const SUBSCRIPTION_PLANS = [
     name: "Agency",
     price: "$299",
     period: "/month",
+    annualNote: "$2,990/yr — save $598",
     leads: "1,000 leads/month",
     perLead: "~$0.30/lead",
     features: [
@@ -64,6 +68,7 @@ const SUBSCRIPTION_PLANS = [
       "Advanced filters (Yelp, freshness, quality)",
       "AI conversion scores on all leads",
       "Facebook & Instagram links included",
+      "API access (JSON + webhook)",
       "Instant CSV download, any time",
       "Cancel anytime",
     ],
@@ -158,7 +163,12 @@ export default function PricingPage() {
                   <span className="text-slate-400 text-sm">{plan.period}</span>
                 </div>
                 <div className="text-blue-600 font-semibold text-sm mb-1">{plan.leads}</div>
-                <div className="text-slate-400 text-xs mb-6">{plan.perLead}</div>
+                <div className="text-slate-400 text-xs mb-1">{plan.perLead}</div>
+                {plan.annualNote && (
+                  <div className="text-emerald-600 text-xs font-semibold mb-4">
+                    or {plan.annualNote}
+                  </div>
+                )}
 
                 <ul className="space-y-2.5 mb-8 flex-1">
                   {plan.features.map((f) => (

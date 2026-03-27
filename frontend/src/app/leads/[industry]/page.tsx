@@ -87,6 +87,38 @@ export default async function IndustryPage({ params }: { params: { industry: str
         </div>
       )}
 
+      <div className="mt-12 mb-10">
+        <h2 className="text-2xl font-bold text-slate-900 mb-6">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          {[
+            {
+              q: `How much do ${industryTitle.toLowerCase()} leads cost?`,
+              a: `Leads start at $0.10 each with volume discounts up to 45% off. Monthly subscribers get ${industryTitle.toLowerCase()} leads for as low as $0.30/lead. Consumer intent (permit) leads carry a small premium due to higher conversion rates.`,
+            },
+            {
+              q: "Do the leads include email addresses?",
+              a: "Yes — many leads include verified email addresses. Email coverage varies by industry, typically 15–40% of leads. Every lead includes a phone number and business address.",
+            },
+            {
+              q: "How many times is each lead sold?",
+              a: "We enforce a hard maximum of 5 sales per lead. Once a lead reaches 5 buyers it is retired from the shop. Most competitors sell leads to unlimited buyers without disclosing this.",
+            },
+            {
+              q: "What's your bad lead guarantee?",
+              a: "If a lead has a disconnected phone or wrong info, report it and we'll issue a store credit — no questions asked.",
+            },
+          ].map((faq) => (
+            <details key={faq.q} className="border border-slate-200 rounded-xl p-5 group">
+              <summary className="font-semibold text-slate-900 cursor-pointer list-none flex justify-between items-center">
+                {faq.q}
+                <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="mt-3 text-slate-600 text-sm leading-relaxed">{faq.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-12 bg-blue-50 border border-blue-200 rounded-xl p-8 text-center">
         <h2 className="text-2xl font-bold text-slate-900 mb-2">
           Ready to buy {industryTitle} leads?

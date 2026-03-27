@@ -23,8 +23,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+asyncpg://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
-      DATABASE_URL_SYNC: postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
+      DATABASE_URL_SYNC: ${DATABASE_URL_SYNC:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}

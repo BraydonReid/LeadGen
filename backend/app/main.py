@@ -10,9 +10,11 @@ from app.database import AsyncSessionLocal
 from app.routers import (
     ai_search,
     ai_tasks,
+    api_access,
     checkout,
     download,
     email_campaigns,
+    industry_requests,
     orders,
     report,
     sample,
@@ -233,6 +235,8 @@ app.include_router(email_campaigns.router, prefix="/api")
 app.include_router(seo.router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
 app.include_router(subscriptions.router, prefix="/api")
+app.include_router(api_access.router, prefix="/api")
+app.include_router(industry_requests.router, prefix="/api")
 
 
 @app.get("/health")

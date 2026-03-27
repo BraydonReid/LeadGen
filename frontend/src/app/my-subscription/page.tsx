@@ -162,6 +162,13 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
   const [applyingRef, setApplyingRef] = useState(false);
   const [refMsg, setRefMsg] = useState<string | null>(null);
 
+  // Developer API
+  const [apiKeyCopied, setApiKeyCopied] = useState(false);
+  const [generatingKey, setGeneratingKey] = useState(false);
+  const [webhookInput, setWebhookInput] = useState("");
+  const [savingWebhook, setSavingWebhook] = useState(false);
+  const [webhookMsg, setWebhookMsg] = useState<string | null>(null);
+
   // Cancel
   const [canceling, setCanceling] = useState(false);
   const [cancelMsg, setCancelMsg] = useState<string | null>(null);
@@ -197,6 +204,9 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
   }, [session, onSignOut]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (sub?.webhook_url) setWebhookInput((sub.webhook_url as string) ?? "");
+  }, [sub]);
 
   async function handleDownload(e: React.FormEvent) {
     e.preventDefault();
@@ -389,6 +399,111 @@ function Dashboard({ session, email, onSignOut }: { session: string; email: stri
             )}
           </form>
         </div>
+
+        {/* Developer Access — Pro/Agency only */}
+        {(sub.plan === "pro" || sub.plan === "agency") && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 className="text-lg font-black text-slate-900 mb-1">Developer Access</h2>
+            <p className="text-slate-500 text-sm mb-4">
+              Use your API key to fetch leads as JSON from any app or script. Pro/Agency only.
+            </p>
+
+            {/* API Key */}
+            <div className="mb-5">
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">API Key</label>
+              {sub.api_key ? (
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    value={sub.api_key as string}
+                    className="flex-1 font-mono text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 text-slate-700 focus:outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(sub.api_key as string);
+                      setApiKeyCopied(true);
+                      setTimeout(() => setApiKeyCopied(false), 2000);
+                    }}
+                    className="bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold px-3 py-2.5 rounded-xl transition-all whitespace-nowrap"
+                  >
+                    {apiKeyCopied ? "Copied!" : "Copy"}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setGeneratingKey(true);
+                      try {
+                        const res = await fetch(`${API_BASE}/api/subscription/api-key`, {
+                          method: "POST", headers: authHeaders(session),
+                        });
+                        if (res.ok) { const d = await res.json(); setSub(s => ({ ...s!, api_key: d.api_key })); }
+                      } finally { setGeneratingKey(false); }
+                    }}
+                    disabled={generatingKey}
+                    className="border border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl transition-all disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {generatingKey ? "…" : "Regenerate"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={async () => {
+                    setGeneratingKey(true);
+                    try {
+                      const res = await fetch(`${API_BASE}/api/subscription/api-key`, {
+                        method: "POST", headers: authHeaders(session),
+                      });
+                      if (res.ok) { const d = await res.json(); setSub(s => ({ ...s!, api_key: d.api_key })); }
+                    } finally { setGeneratingKey(false); }
+                  }}
+                  disabled={generatingKey}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all"
+                >
+                  {generatingKey ? "Generating…" : "Generate API Key"}
+                </button>
+              )}
+              <p className="text-xs text-slate-400 mt-2">
+                <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">GET /api/leads?industry=hvac&state=TX&limit=50</code>
+                {" "}with <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">Authorization: Bearer {"{"}{"}"}api_key{"}"}</code>
+              </p>
+            </div>
+
+            {/* Webhook URL */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Webhook URL <span className="text-slate-400 font-normal">(optional)</span></label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="https://your-app.com/webhook/leads"
+                  value={webhookInput}
+                  onChange={(e) => setWebhookInput(e.target.value)}
+                  className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={async () => {
+                    setSavingWebhook(true);
+                    setWebhookMsg(null);
+                    try {
+                      const res = await fetch(`${API_BASE}/api/subscription/webhook`, {
+                        method: "PATCH",
+                        headers: authHeaders(session),
+                        body: JSON.stringify({ webhook_url: webhookInput.trim() || null }),
+                      });
+                      setWebhookMsg(res.ok ? "Saved!" : "Failed to save.");
+                    } finally { setSavingWebhook(false); }
+                  }}
+                  disabled={savingWebhook}
+                  className="bg-slate-700 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all whitespace-nowrap"
+                >
+                  {savingWebhook ? "Saving…" : "Save"}
+                </button>
+              </div>
+              {webhookMsg && (
+                <p className={`text-xs mt-1 ${webhookMsg === "Saved!" ? "text-emerald-600" : "text-red-600"}`}>{webhookMsg}</p>
+              )}
+              <p className="text-xs text-slate-400 mt-1">We&apos;ll POST the JSON lead payload here after each API download.</p>
+            </div>
+          </div>
+        )}
 
         {/* Referral program */}
         {referral && (

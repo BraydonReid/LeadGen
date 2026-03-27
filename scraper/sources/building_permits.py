@@ -114,6 +114,38 @@ PERMIT_ENDPOINTS = {
         "city_name": "Austin",
         "state": "TX",
     },
+    # Houston TX — largest Texas city (~50k+ permits/year). Socrata dataset via data.houstontx.gov
+    ("houston", "TX"): {
+        "domain": "data.houstontx.gov",
+        "resource": "ivvt-ep3f",
+        "name_field": "applicant_name",
+        "fallback_name_field": "owner",
+        "address_fields": ["site_address"],
+        "zip_field": "zip_code",
+        "type_field": "permit_type",
+        "desc_field": "work_description",
+        "date_field": "issue_date",
+        "order_field": "issue_date",
+        "city_name": "Houston",
+        "state": "TX",
+    },
+    # San Antonio TX — second-largest TX city (handled below)
+    # Fort Worth TX — see arcgis_permits.py (mapit.fortworthtexas.gov, live daily updates)
+    # Plano TX — Dallas suburb, open data portal
+    ("plano", "TX"): {
+        "domain": "data.plano.gov",
+        "resource": "n4tx-a9ub",
+        "name_field": "contractor_name",
+        "fallback_name_field": "owner_name",
+        "address_fields": ["address"],
+        "zip_field": "zip",
+        "type_field": "permit_type",
+        "desc_field": "description",
+        "date_field": "issued_date",
+        "order_field": "issued_date",
+        "city_name": "Plano",
+        "state": "TX",
+    },
 }
 # Fort Worth TX — Socrata resource qy5k-jz7m last updated 2015; removed until a live dataset is found.
 

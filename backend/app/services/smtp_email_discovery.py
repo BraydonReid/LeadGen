@@ -152,6 +152,7 @@ async def smtp_discovery_batch(db: AsyncSession, batch_size: int = BATCH_SIZE) -
                 if email:
                     lead.email = email
                     lead.email_source = "smtp_discovery"
+                    lead.email_verified = True
                     lead.email_found_at = now
                     lead.ai_scored_at = None
                     lead.conversion_score = None

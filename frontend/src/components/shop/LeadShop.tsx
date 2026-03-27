@@ -75,6 +75,13 @@ export default function LeadShop() {
   const [sampleDone, setSampleDone] = useState(false);
   const [sampleError, setSampleError] = useState<string | null>(null);
 
+  // Request industry modal
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestEmail, setRequestEmail] = useState("");
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestDone, setRequestDone] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
+
   // Order history — email-based, no account needed
   const [buyerEmail, setBuyerEmail] = useState("");
   const [emailInputVisible, setEmailInputVisible] = useState(false);
@@ -547,6 +554,17 @@ export default function LeadShop() {
           </div>
         </form>
         )}
+
+        {/* Request industry link */}
+        <div className="mt-3 pt-3 border-t border-slate-100 text-center">
+          <button
+            type="button"
+            onClick={() => { setShowRequestModal(true); setRequestDone(false); setRequestError(null); }}
+            className="text-xs text-slate-400 hover:text-blue-600 transition-colors"
+          >
+            Don&apos;t see your industry? Request it and we&apos;ll add it →
+          </button>
+        </div>
       </div>
 
       {/* Order history — email-based */}
@@ -665,9 +683,92 @@ export default function LeadShop() {
         <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center">
           <div className="text-3xl mb-3">🔍</div>
           <h3 className="font-bold text-yellow-900 mb-1">No leads found</h3>
-          <p className="text-yellow-700 text-sm">
+          <p className="text-yellow-700 text-sm mb-4">
             Try a different industry, expand your radius, or broaden your location. Our database grows daily.
           </p>
+          <button
+            type="button"
+            onClick={() => { setShowRequestModal(true); setRequestDone(false); setRequestError(null); }}
+            className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all"
+          >
+            Request this industry — we&apos;ll notify you when leads arrive →
+          </button>
+        </div>
+      )}
+
+      {/* Request Industry Modal */}
+      {showRequestModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowRequestModal(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+            {requestDone ? (
+              <div className="text-center py-4">
+                <div className="text-4xl mb-3">📬</div>
+                <h3 className="text-lg font-black text-slate-900 mb-2">Request received!</h3>
+                <p className="text-slate-500 text-sm mb-4">
+                  We&apos;ll email you as soon as <strong>{industry || "this industry"}</strong> leads are available
+                  {state ? ` in ${state}` : ""}.
+                </p>
+                <button onClick={() => setShowRequestModal(false)} className="text-blue-600 hover:underline text-sm font-semibold">
+                  Close
+                </button>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-black text-slate-900 mb-1">Request this industry</h3>
+                <p className="text-slate-500 text-sm mb-4">
+                  Enter your email and we&apos;ll notify you when <strong>{industry || "this industry"}</strong> leads
+                  {state ? ` in ${state}` : ""} become available. Usually within 1–2 weeks.
+                </p>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setRequestLoading(true);
+                    setRequestError(null);
+                    try {
+                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/industry-request`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: requestEmail.trim().toLowerCase(), industry: industry || "general", state: state || "TX", city: city || null }),
+                      });
+                      if (!res.ok) throw new Error("Request failed");
+                      setRequestDone(true);
+                    } catch {
+                      setRequestError("Something went wrong. Please try again.");
+                    } finally {
+                      setRequestLoading(false);
+                    }
+                  }}
+                  className="space-y-3"
+                >
+                  <input
+                    type="email"
+                    required
+                    placeholder="your@email.com"
+                    value={requestEmail}
+                    onChange={(e) => setRequestEmail(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {requestError && <p className="text-red-600 text-sm">{requestError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={requestLoading || !requestEmail.trim()}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-all"
+                    >
+                      {requestLoading ? "Submitting…" : "Notify Me →"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowRequestModal(false)}
+                      className="px-4 border border-slate-200 rounded-xl text-sm text-slate-500 hover:text-slate-700 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
         </div>
       )}
 
