@@ -89,7 +89,8 @@ def fetch_us_cities(min_population: int = 500) -> dict[str, list[str]]:
                     continue
 
                 admin1 = parts[10]
-                state = FIPS_TO_STATE.get(admin1)
+                # GeoNames uses 2-letter state abbreviations for US admin1_code
+                state = admin1 if admin1 in US_STATES else None
                 if not state:
                     continue  # territory or unmapped
 
