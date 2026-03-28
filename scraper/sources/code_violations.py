@@ -41,12 +41,14 @@ from sources.base import BaseScraper, ScrapedLead
 VIOLATION_ENDPOINTS = {
     ("dallas", "TX"): {
         "domain": "www.dallasopendata.com",
-        "resource": "aq3b-mdjb",  # Code Enforcement Cases dataset
-        "address_field": "violation_address",
-        "violation_field": "violation_description",
-        "date_field": "case_opened_date",
-        "order_field": "case_opened_date",
-        "zip_field": "zip_code",
+        "resource": "x9pz-kdq9",  # Code Violations dataset (active)
+        "address_field": None,     # address built from str_num + str_nam + str_suffix
+        "address_parts": ["str_num", "str_nam", "str_suffix"],
+        "violation_field": "nuisance",
+        "fallback_violation_field": "service_request",
+        "date_field": "created",
+        "order_field": "created",
+        "zip_field": None,         # zip in nested location.human_address
         "city_name": "Dallas",
     },
     ("houston", "TX"): {
@@ -146,8 +148,10 @@ class CodeViolationScraper(BaseScraper):
         domain = config["domain"]
         resource = config["resource"]
         city_name = config["city_name"]
-        address_f = config["address_field"]
+        address_f = config.get("address_field")
+        address_parts = config.get("address_parts")  # Dallas: build from multiple fields
         violation_f = config["violation_field"]
+        fallback_violation_f = config.get("fallback_violation_field")
         date_f = config.get("date_field")
         order_f = config.get("order_field")
         zip_f = config.get("zip_field")
@@ -183,6 +187,8 @@ class CodeViolationScraper(BaseScraper):
 
                 for row in rows:
                     violation_desc = str(row.get(violation_f, "") or "").strip()
+                    if not violation_desc and fallback_violation_f:
+                        violation_desc = str(row.get(fallback_violation_f, "") or "").strip()
                     if not violation_desc:
                         continue
 
@@ -194,7 +200,15 @@ class CodeViolationScraper(BaseScraper):
                     if industry and industry.lower() not in mapped_industry and mapped_industry not in industry.lower():
                         continue
 
-                    address = str(row.get(address_f, "") or "").strip()
+                    # Build address — either single field or from parts (Dallas)
+                    if address_parts:
+                        address = " ".join(
+                            str(row.get(p, "") or "").strip()
+                            for p in address_parts
+                            if str(row.get(p, "") or "").strip()
+                        )
+                    else:
+                        address = str(row.get(address_f, "") or "").strip()
                     if not address:
                         continue
 

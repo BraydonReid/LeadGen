@@ -172,7 +172,8 @@ class CKANPermitScraper(BaseScraper):
         max_pages = 20
         cutoff = datetime.now() - timedelta(days=self.LOOKBACK_DAYS)
 
-        with httpx.Client(timeout=25) as client:
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; LeadGenBot/1.0; +https://takeyourleadtoday.com)"}
+        with httpx.Client(timeout=30, headers=headers) as client:
             for _ in range(max_pages):
                 if len(leads) >= max_results:
                     break

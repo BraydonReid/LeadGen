@@ -206,7 +206,8 @@ class ArcGISPermitScraper(BaseScraper):
         limit = 200
         max_pages = 15
 
-        with httpx.Client(timeout=30) as client:
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; LeadGenBot/1.0)"}
+        with httpx.Client(timeout=45, headers=headers) as client:
             for _ in range(max_pages):
                 if len(leads) >= max_results:
                     break
@@ -219,18 +220,23 @@ class ArcGISPermitScraper(BaseScraper):
                     "orderByFields": f"{date_f} DESC",
                     "f": "json",
                 }
-                try:
-                    resp = client.get(url, params=params)
-                    resp.raise_for_status()
-                    data = resp.json()
-                except Exception as e:
-                    print(f"[arcgis-permits] {city_name} error: {e}")
+                data = None
+                for attempt in range(2):
+                    try:
+                        resp = client.get(url, params=params)
+                        resp.raise_for_status()
+                        data = resp.json()
+                        break
+                    except Exception as e:
+                        if attempt == 1:
+                            print(f"[arcgis-permits] {city_name} error: {e}")
+                        time.sleep(5)
+                if data is None:
                     break
 
                 # ArcGIS returns an error dict if the query fails (e.g. wrong field name)
                 if "error" in data:
                     # Retry without date filter — fall back to unfiltered + local check
-                    params.pop("where", None)
                     params["where"] = "1=1"
                     try:
                         resp = client.get(url, params=params)
