@@ -118,6 +118,74 @@ services:
     restart: unless-stopped
     command: python main.py --schedule
 
+  scraper-central:
+    build: ./scraper
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: central
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - ./scraper:/app
+      - scraper_central_history:/app/history
+    restart: unless-stopped
+    command: python main.py --schedule
+
+  scraper-midwest:
+    build: ./scraper
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: midwest
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - ./scraper:/app
+      - scraper_midwest_history:/app/history
+    restart: unless-stopped
+    command: python main.py --schedule
+
+  scraper-southeast:
+    build: ./scraper
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: southeast
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - ./scraper:/app
+      - scraper_southeast_history:/app/history
+    restart: unless-stopped
+    command: python main.py --schedule
+
+  scraper-northwest:
+    build: ./scraper
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${SCRAPER_DATABASE_URL:-postgresql://leadgen:${POSTGRES_PASSWORD}@postgres:5432/leadgen}
+      PYTHONUNBUFFERED: "1"
+      SCRAPER_INSTANCE: northwest
+      YELP_API_KEY: ${YELP_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+    volumes:
+      - ./scraper:/app
+      - scraper_northwest_history:/app/history
+    restart: unless-stopped
+    command: python main.py --schedule
+
   frontend:
     build: ./frontend
     depends_on:
@@ -137,3 +205,7 @@ volumes:
   scraper_west_history:
   scraper_north_history:
   scraper_south_history:
+  scraper_central_history:
+  scraper_midwest_history:
+  scraper_southeast_history:
+  scraper_northwest_history:
