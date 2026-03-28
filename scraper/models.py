@@ -29,3 +29,5 @@ class Lead(Base):
     yelp_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
     review_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     years_in_business: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
+    bbb_rating: Mapped[str | None] = mapped_column(String(5), nullable=True)
+    bbb_accredited: Mapped[bool | None] = mapped_column(nullable=True)

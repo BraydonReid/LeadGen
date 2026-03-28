@@ -119,18 +119,24 @@ function MagicLinkGate({ onSession }: { onSession: (s: string, e: string) => voi
         </form>
         <div className="mt-6 pt-4 border-t border-slate-100">
           <p className="text-center text-xs text-slate-500 font-semibold mb-3">Not subscribed? Choose a plan:</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <a href="/subscribe?plan=starter"
-              className="block text-center border border-slate-200 rounded-xl px-4 py-3 hover:border-blue-300 hover:bg-blue-50 transition-all">
+              className="block text-center border border-slate-200 rounded-xl px-3 py-3 hover:border-blue-300 hover:bg-blue-50 transition-all">
               <div className="font-bold text-slate-800 text-sm">Starter</div>
-              <div className="text-blue-600 font-black text-lg">$29.99<span className="text-slate-400 text-xs font-normal">/mo</span></div>
-              <div className="text-slate-400 text-xs">50 leads/month</div>
+              <div className="text-blue-600 font-black text-base">$29.99<span className="text-slate-400 text-xs font-normal">/mo</span></div>
+              <div className="text-slate-400 text-xs">50 leads/mo</div>
             </a>
             <a href="/subscribe?plan=pro"
-              className="block text-center border-2 border-blue-500 rounded-xl px-4 py-3 bg-blue-50 hover:bg-blue-100 transition-all">
+              className="block text-center border-2 border-blue-500 rounded-xl px-3 py-3 bg-blue-50 hover:bg-blue-100 transition-all">
               <div className="font-bold text-slate-800 text-sm">Pro</div>
-              <div className="text-blue-600 font-black text-lg">$99.99<span className="text-slate-400 text-xs font-normal">/mo</span></div>
-              <div className="text-slate-400 text-xs">300 leads/month</div>
+              <div className="text-blue-600 font-black text-base">$99.99<span className="text-slate-400 text-xs font-normal">/mo</span></div>
+              <div className="text-slate-400 text-xs">300 leads/mo</div>
+            </a>
+            <a href="/subscribe?plan=agency"
+              className="block text-center border border-violet-300 rounded-xl px-3 py-3 hover:bg-violet-50 transition-all">
+              <div className="font-bold text-slate-800 text-sm">Agency</div>
+              <div className="text-violet-600 font-black text-base">$299<span className="text-slate-400 text-xs font-normal">/mo</span></div>
+              <div className="text-slate-400 text-xs">1,000 leads/mo</div>
             </a>
           </div>
         </div>
